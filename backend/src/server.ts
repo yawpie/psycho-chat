@@ -1,11 +1,26 @@
-import { WebSocketServer } from 'ws';
+import express from 'express';
+import cors from 'cors';
+import { createServer } from 'node:http';
+import { WebSocketServer, WebSocket } from 'ws';
 import { randomUUID } from 'node:crypto';
 
 const PORT = Number.parseInt(process.env.PORT ?? '3000', 10);
-const wss = new WebSocketServer({ port: PORT });
-const clients = new Set();
 
-function createMessage(sender, text) {
+const app = express();
+app.use(cors());
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+
+const clients = new Set<WebSocket>();
+
+interface ChatMessage {
+  id: string;
+  sender: string;
+  text: string;
+  timestamp: string;
+}
+
+function createMessage(sender: string, text: string): ChatMessage {
   return {
     id: randomUUID(),
     sender,
@@ -14,17 +29,17 @@ function createMessage(sender, text) {
   };
 }
 
-function broadcast(payload) {
+function broadcast(payload: ChatMessage): void {
   const encoded = JSON.stringify(payload);
 
   for (const client of clients) {
-    if (client.readyState === client.OPEN) {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(encoded);
     }
   }
 }
 
-wss.on('connection', (socket) => {
+wss.on('connection', (socket: WebSocket) => {
   clients.add(socket);
   socket.send(JSON.stringify(createMessage('system', 'Connected to Psycho Chat backend.')));
 
@@ -43,7 +58,7 @@ wss.on('connection', (socket) => {
     clients.delete(socket);
   });
 
-  socket.on('error', (error) => {
+  socket.on('error', (error: Error) => {
     console.error(JSON.stringify({
       level: 'error',
       message: 'WebSocket client error',
@@ -61,7 +76,7 @@ wss.on('listening', () => {
   }));
 });
 
-wss.on('error', (error) => {
+wss.on('error', (error: Error) => {
   console.error(JSON.stringify({
     level: 'error',
     message: 'WebSocket server error',
@@ -69,4 +84,12 @@ wss.on('error', (error) => {
     timestamp: new Date().toISOString(),
   }));
   process.exitCode = 1;
+});
+
+server.listen(PORT, () => {
+  console.log(JSON.stringify({
+    level: 'info',
+    message: `HTTP server listening on http://localhost:${PORT}`,
+    timestamp: new Date().toISOString(),
+  }));
 });
