@@ -5,7 +5,7 @@ import 'package:psycho_chat/domain/entities/chat_message.dart';
 class MessageBubble extends StatelessWidget {
   const MessageBubble({super.key, required this.message});
 
-  final ChatMessage message;
+  final Message message;
 
   @override
   Widget build(BuildContext context) {

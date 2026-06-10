@@ -1,7 +1,7 @@
 import 'package:psycho_chat/domain/entities/chat_message.dart';
 
 abstract class ChatRepository {
-  Stream<ChatMessage> get messageStream;
+  Stream<Message> get messageStream;
   bool get isConnected;
 
   Future<void> connect();

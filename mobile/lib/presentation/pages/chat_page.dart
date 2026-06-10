@@ -18,9 +18,9 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final ChatRepository _repository = ChatRepositoryImpl();
   final ScrollController _scrollController = ScrollController();
-  final List<ChatMessage> _messages = <ChatMessage>[];
+  final List<Message> _messages = <Message>[];
 
-  StreamSubscription<ChatMessage>? _subscription;
+  StreamSubscription<Message>? _subscription;
   bool _isConnected = false;
 
   @override

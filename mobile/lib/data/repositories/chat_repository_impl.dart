@@ -1,4 +1,4 @@
-import 'package:psycho_chat/data/datasources/websocket_remote_datasource.dart';
+import 'package:psycho_chat/data/datasources/remote/websocket_remote_datasource.dart';
 import 'package:psycho_chat/domain/entities/chat_message.dart';
 import 'package:psycho_chat/domain/repositories/chat_repository.dart';
 
@@ -9,7 +9,7 @@ class ChatRepositoryImpl implements ChatRepository {
   final WebSocketRemoteDatasource _datasource;
 
   @override
-  Stream<ChatMessage> get messageStream => _datasource.messageStream;
+  Stream<Message> get messageStream => _datasource.messageStream;
 
   @override
   bool get isConnected => _datasource.isConnected;

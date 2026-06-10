@@ -3,7 +3,7 @@ import 'package:psycho_chat/data/models/chat_message_model.dart';
 
 void main() {
   test('ChatMessageModel parses JSON payload', () {
-    final message = ChatMessageModel.fromJson(<String, dynamic>{
+    final message = MessageModel.fromJson(<String, dynamic>{
       'id': '1',
       'sender': 'system',
       'text': 'hello',

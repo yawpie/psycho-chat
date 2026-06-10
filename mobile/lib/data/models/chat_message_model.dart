@@ -1,15 +1,16 @@
 import 'package:psycho_chat/domain/entities/chat_message.dart';
 
-class ChatMessageModel extends ChatMessage {
-  const ChatMessageModel({
+class MessageModel extends Message {
+  const MessageModel({
     required super.id,
     required super.sender,
     required super.text,
     required super.timestamp,
+    required super.status,
   });
 
-  factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
-    return ChatMessageModel(
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
       id:
           json['id']?.toString() ??
           DateTime.now().microsecondsSinceEpoch.toString(),
@@ -18,15 +19,17 @@ class ChatMessageModel extends ChatMessage {
       timestamp:
           DateTime.tryParse(json['timestamp']?.toString() ?? '') ??
           DateTime.now(),
+      status: json['status']?.toString() ?? 'sent',
     );
   }
 
-  factory ChatMessageModel.system(String text) {
-    return ChatMessageModel(
+  factory MessageModel.system(String text) {
+    return MessageModel(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       sender: 'system',
       text: text,
       timestamp: DateTime.now(),
+      status: 'sent',
     );
   }
 }

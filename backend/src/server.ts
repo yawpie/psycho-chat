@@ -1,95 +1,150 @@
-import express from 'express';
-import cors from 'cors';
-import { createServer } from 'node:http';
-import { WebSocketServer, WebSocket } from 'ws';
-import { randomUUID } from 'node:crypto';
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
+import { Message } from "./models/convo.model";
+import apiRouter from "./routes/api";
 
-const PORT = Number.parseInt(process.env.PORT ?? '3000', 10);
+const PORT = Number.parseInt(process.env.PORT ?? "3000", 10);
 
 const app = express();
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// API routes
+app.use(apiRouter);
+
+// Global error handling middleware
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error("Unhandled Global Error:", err);
+
+  const errorResponse = {
+    success: false,
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+  };
+
+  res.status(err.status || 500).json(errorResponse);
+});
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
 
-const clients = new Set<WebSocket>();
+// interface ChatMessage {
+//   id: string;
+//   sender: string;
+//   text: string;
+//   timestamp: string;
+// }
 
-interface ChatMessage {
-  id: string;
-  sender: string;
-  text: string;
-  timestamp: string;
-}
-
-function createMessage(sender: string, text: string): ChatMessage {
+function createMessage(
+  sender: string,
+  text: string,
+  conversationId?: number,
+): Message {
   return {
-    id: randomUUID(),
     sender,
     text,
-    timestamp: new Date().toISOString(),
+    createdAt: new Date(),
+    conversationId, // No conversation ID for system messages
   };
 }
 
-function broadcast(payload: ChatMessage): void {
-  const encoded = JSON.stringify(payload);
+io.on("connection", (socket) => {
+  console.log(
+    JSON.stringify({
+      level: "info",
+      message: "Client connected",
+      socketId: socket.id,
+      timestamp: new Date().toISOString(),
+    }),
+  );
 
-  for (const client of clients) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(encoded);
-    }
-  }
-}
+  // Send welcome message to the connected client
+  socket.emit(
+    "message",
+    createMessage("system", "Connected to Psycho Chat backend."),
+  );
 
-wss.on('connection', (socket: WebSocket) => {
-  clients.add(socket);
-  socket.send(JSON.stringify(createMessage('system', 'Connected to Psycho Chat backend.')));
+  // Listen for incoming messages
+  socket.on("message", (text: string) => {
+    const trimmedText = text?.trim();
 
-  socket.on('message', (data) => {
-    const text = data.toString().trim();
-
-    if (!text) {
-      socket.send(JSON.stringify(createMessage('system', 'Message cannot be empty.')));
+    if (!trimmedText) {
+      socket.emit(
+        "message",
+        createMessage("system", "Message cannot be empty."),
+      );
       return;
     }
 
-    broadcast(createMessage('user', text));
+    // Broadcast message to all connected clients
+    const message = createMessage("user", trimmedText);
+    io.emit("message", message);
+
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "Message broadcasted",
+        socketId: socket.id,
+        text: trimmedText,
+        timestamp: new Date().toISOString(),
+      }),
+    );
   });
 
-  socket.on('close', () => {
-    clients.delete(socket);
+  // Handle disconnection
+  socket.on("disconnect", (reason) => {
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "Client disconnected",
+        socketId: socket.id,
+        reason,
+        timestamp: new Date().toISOString(),
+      }),
+    );
   });
 
-  socket.on('error', (error: Error) => {
-    console.error(JSON.stringify({
-      level: 'error',
-      message: 'WebSocket client error',
-      error: error.message,
-      timestamp: new Date().toISOString(),
-    }));
+  // Handle errors
+  socket.on("error", (error: Error) => {
+    console.error(
+      JSON.stringify({
+        level: "error",
+        message: "Socket error",
+        socketId: socket.id,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      }),
+    );
   });
-});
-
-wss.on('listening', () => {
-  console.log(JSON.stringify({
-    level: 'info',
-    message: `WebSocket server listening on ws://localhost:${PORT}`,
-    timestamp: new Date().toISOString(),
-  }));
-});
-
-wss.on('error', (error: Error) => {
-  console.error(JSON.stringify({
-    level: 'error',
-    message: 'WebSocket server error',
-    error: error.message,
-    timestamp: new Date().toISOString(),
-  }));
-  process.exitCode = 1;
 });
 
 server.listen(PORT, () => {
-  console.log(JSON.stringify({
-    level: 'info',
-    message: `HTTP server listening on http://localhost:${PORT}`,
-    timestamp: new Date().toISOString(),
-  }));
+  console.log(
+    JSON.stringify({
+      level: "info",
+      message: `Socket.IO server listening on http://localhost:${PORT}`,
+      timestamp: new Date().toISOString(),
+    }),
+  );
 });
+
+// Handle server errors
+server.on("error", (error: Error) => {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      message: "HTTP server error",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    }),
+  );
+  process.exitCode = 1;
+});
+
