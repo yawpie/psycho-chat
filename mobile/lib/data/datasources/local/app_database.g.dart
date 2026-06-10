@@ -243,8 +243,23 @@ class $ConversationsTable extends Conversations
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _passwordMeta = const VerificationMeta(
+    'password',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, user1, user2];
+  late final GeneratedColumn<String> password = GeneratedColumn<String>(
+    'password',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 0,
+      maxTextLength: 255,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, user1, user2, password];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -276,6 +291,12 @@ class $ConversationsTable extends Conversations
     } else if (isInserting) {
       context.missing(_user2Meta);
     }
+    if (data.containsKey('password')) {
+      context.handle(
+        _passwordMeta,
+        password.isAcceptableOrUnknown(data['password']!, _passwordMeta),
+      );
+    }
     return context;
   }
 
@@ -297,6 +318,10 @@ class $ConversationsTable extends Conversations
         DriftSqlType.string,
         data['${effectivePrefix}user2'],
       )!,
+      password: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}password'],
+      ),
     );
   }
 
@@ -310,10 +335,12 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   final int id;
   final String user1;
   final String user2;
+  final String? password;
   const Conversation({
     required this.id,
     required this.user1,
     required this.user2,
+    this.password,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -321,6 +348,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     map['id'] = Variable<int>(id);
     map['user1'] = Variable<String>(user1);
     map['user2'] = Variable<String>(user2);
+    if (!nullToAbsent || password != null) {
+      map['password'] = Variable<String>(password);
+    }
     return map;
   }
 
@@ -329,6 +359,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
       id: Value(id),
       user1: Value(user1),
       user2: Value(user2),
+      password: password == null && nullToAbsent
+          ? const Value.absent()
+          : Value(password),
     );
   }
 
@@ -341,6 +374,7 @@ class Conversation extends DataClass implements Insertable<Conversation> {
       id: serializer.fromJson<int>(json['id']),
       user1: serializer.fromJson<String>(json['user1']),
       user2: serializer.fromJson<String>(json['user2']),
+      password: serializer.fromJson<String?>(json['password']),
     );
   }
   @override
@@ -350,20 +384,27 @@ class Conversation extends DataClass implements Insertable<Conversation> {
       'id': serializer.toJson<int>(id),
       'user1': serializer.toJson<String>(user1),
       'user2': serializer.toJson<String>(user2),
+      'password': serializer.toJson<String?>(password),
     };
   }
 
-  Conversation copyWith({int? id, String? user1, String? user2}) =>
-      Conversation(
-        id: id ?? this.id,
-        user1: user1 ?? this.user1,
-        user2: user2 ?? this.user2,
-      );
+  Conversation copyWith({
+    int? id,
+    String? user1,
+    String? user2,
+    Value<String?> password = const Value.absent(),
+  }) => Conversation(
+    id: id ?? this.id,
+    user1: user1 ?? this.user1,
+    user2: user2 ?? this.user2,
+    password: password.present ? password.value : this.password,
+  );
   Conversation copyWithCompanion(ConversationsCompanion data) {
     return Conversation(
       id: data.id.present ? data.id.value : this.id,
       user1: data.user1.present ? data.user1.value : this.user1,
       user2: data.user2.present ? data.user2.value : this.user2,
+      password: data.password.present ? data.password.value : this.password,
     );
   }
 
@@ -372,46 +413,53 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     return (StringBuffer('Conversation(')
           ..write('id: $id, ')
           ..write('user1: $user1, ')
-          ..write('user2: $user2')
+          ..write('user2: $user2, ')
+          ..write('password: $password')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, user1, user2);
+  int get hashCode => Object.hash(id, user1, user2, password);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Conversation &&
           other.id == this.id &&
           other.user1 == this.user1 &&
-          other.user2 == this.user2);
+          other.user2 == this.user2 &&
+          other.password == this.password);
 }
 
 class ConversationsCompanion extends UpdateCompanion<Conversation> {
   final Value<int> id;
   final Value<String> user1;
   final Value<String> user2;
+  final Value<String?> password;
   const ConversationsCompanion({
     this.id = const Value.absent(),
     this.user1 = const Value.absent(),
     this.user2 = const Value.absent(),
+    this.password = const Value.absent(),
   });
   ConversationsCompanion.insert({
     this.id = const Value.absent(),
     required String user1,
     required String user2,
+    this.password = const Value.absent(),
   }) : user1 = Value(user1),
        user2 = Value(user2);
   static Insertable<Conversation> custom({
     Expression<int>? id,
     Expression<String>? user1,
     Expression<String>? user2,
+    Expression<String>? password,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (user1 != null) 'user1': user1,
       if (user2 != null) 'user2': user2,
+      if (password != null) 'password': password,
     });
   }
 
@@ -419,11 +467,13 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     Value<int>? id,
     Value<String>? user1,
     Value<String>? user2,
+    Value<String?>? password,
   }) {
     return ConversationsCompanion(
       id: id ?? this.id,
       user1: user1 ?? this.user1,
       user2: user2 ?? this.user2,
+      password: password ?? this.password,
     );
   }
 
@@ -439,6 +489,9 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     if (user2.present) {
       map['user2'] = Variable<String>(user2.value);
     }
+    if (password.present) {
+      map['password'] = Variable<String>(password.value);
+    }
     return map;
   }
 
@@ -447,7 +500,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     return (StringBuffer('ConversationsCompanion(')
           ..write('id: $id, ')
           ..write('user1: $user1, ')
-          ..write('user2: $user2')
+          ..write('user2: $user2, ')
+          ..write('password: $password')
           ..write(')'))
         .toString();
   }
@@ -1005,12 +1059,14 @@ typedef $$ConversationsTableCreateCompanionBuilder =
       Value<int> id,
       required String user1,
       required String user2,
+      Value<String?> password,
     });
 typedef $$ConversationsTableUpdateCompanionBuilder =
     ConversationsCompanion Function({
       Value<int> id,
       Value<String> user1,
       Value<String> user2,
+      Value<String?> password,
     });
 
 final class $$ConversationsTableReferences
@@ -1068,6 +1124,11 @@ class $$ConversationsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get password => $composableBuilder(
+    column: $table.password,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> messagesRefs(
     Expression<bool> Function($$MessagesTableFilterComposer f) f,
   ) {
@@ -1117,6 +1178,11 @@ class $$ConversationsTableOrderingComposer
     column: $table.user2,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get password => $composableBuilder(
+    column: $table.password,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ConversationsTableAnnotationComposer
@@ -1136,6 +1202,9 @@ class $$ConversationsTableAnnotationComposer
 
   GeneratedColumn<String> get user2 =>
       $composableBuilder(column: $table.user2, builder: (column) => column);
+
+  GeneratedColumn<String> get password =>
+      $composableBuilder(column: $table.password, builder: (column) => column);
 
   Expression<T> messagesRefs<T extends Object>(
     Expression<T> Function($$MessagesTableAnnotationComposer a) f,
@@ -1194,16 +1263,24 @@ class $$ConversationsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> user1 = const Value.absent(),
                 Value<String> user2 = const Value.absent(),
-              }) => ConversationsCompanion(id: id, user1: user1, user2: user2),
+                Value<String?> password = const Value.absent(),
+              }) => ConversationsCompanion(
+                id: id,
+                user1: user1,
+                user2: user2,
+                password: password,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String user1,
                 required String user2,
+                Value<String?> password = const Value.absent(),
               }) => ConversationsCompanion.insert(
                 id: id,
                 user1: user1,
                 user2: user2,
+                password: password,
               ),
           withReferenceMapper: (p0) => p0
               .map(

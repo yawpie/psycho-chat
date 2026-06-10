@@ -58,6 +58,12 @@ class ConversationLocalDataSource {
         );
   }
 
+  Future<List<Conversation>> getConversationsForUser(String username) {
+    return (database.select(database.conversations)
+          ..where((c) => c.user1.equals(username) | c.user2.equals(username)))
+        .get();
+  }
+
   Future<void> deleteConversation(
     int id,
   ) {
@@ -76,6 +82,12 @@ class MessageLocalDataSource {
     return database.select(
       database.messages,
     ).get();
+  }
+
+  Future<List<Message>> getMessagesForConversation(int conversationId) {
+    return (database.select(database.messages)
+          ..where((m) => m.conversationId.equals(conversationId)))
+        .get();
   }
 
   Future<void> createMessage(

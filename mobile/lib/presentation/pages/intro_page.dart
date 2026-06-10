@@ -4,9 +4,9 @@ import 'package:psycho_chat/presentation/pages/chat_page.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_login_page.dart';
 
 class IntroPage extends StatelessWidget {
-  const IntroPage({super.key, required this.loginUseCase});
+  const IntroPage({super.key});
 
-  final LoginUseCase loginUseCase;
+  // final LoginUseCase loginUseCase;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class IntroPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PsikiaterLoginPage(loginUseCase: loginUseCase)),
+                  MaterialPageRoute(builder: (context) => PsikiaterLoginPage()),
                 );
               },
               child: Text('Psikiater',style: TextStyle(fontWeight: FontWeight.bold),),

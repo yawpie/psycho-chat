@@ -1,10 +1,13 @@
-import 'package:psycho_chat/core/network/dio_client.dart';
-import 'package:psycho_chat/data/datasources/remote/backend_remote_datasource.dart';
-import 'package:psycho_chat/data/repositories/auth_repository_impl.dart';
-import 'package:psycho_chat/domain/usecases/login.dart';
+import 'package:get_it/get_it.dart';
 
-final backendRemoteDatasource = BackendRemoteDatasource(dio: DioClient.dio);
-final authRepository = AuthRepositoryImpl(backendRemoteDatasource);
+import 'datasource_module.dart';
+import 'repository_module.dart';
+import 'usecase_module.dart';
 
-final loginUseCase = LoginUseCase(repository: authRepository);
-final registerUseCase = RegisterUseCase(repository: authRepository);
+final getIt = GetIt.instance;
+
+Future<void> setupInjection() async {
+  await registerDatasourceModule(getIt);
+  await registerRepositoryModule(getIt);
+  await registerUseCaseModule(getIt);
+}

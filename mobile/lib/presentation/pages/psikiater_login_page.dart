@@ -1,18 +1,21 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:psycho_chat/core/di/injection.dart';
 import 'package:psycho_chat/domain/usecases/login.dart';
+import 'package:psycho_chat/domain/usecases/message.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_conversations_page.dart';
 
 class PsikiaterLoginPage extends StatefulWidget {
-  const PsikiaterLoginPage({super.key, required this.loginUseCase});
-  final LoginUseCase loginUseCase;
+  const PsikiaterLoginPage({super.key});
+  // final LoginUseCase loginUseCase;
 
   @override
   State<PsikiaterLoginPage> createState() => _PsikiaterLoginPageState();
 }
 
 class _PsikiaterLoginPageState extends State<PsikiaterLoginPage> {
+  final LoginUseCase loginUseCase = getIt<LoginUseCase>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String _usernameText = "";
@@ -36,7 +39,7 @@ class _PsikiaterLoginPageState extends State<PsikiaterLoginPage> {
     print("Password: $_passwordText");
     // Implement login logic here, for example, using the AuthRepository to authenticate the user
     // If login is successful, navigate to the conversations page
-    await widget.loginUseCase.call(_usernameText, _passwordText);
+    await loginUseCase.call(_usernameText, _passwordText);
     navigateToChatPage();
   }
 

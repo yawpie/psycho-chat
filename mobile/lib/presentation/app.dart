@@ -14,7 +14,7 @@ class PsychoChatApp extends StatelessWidget {
       title: AppConstants.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: IntroPage(loginUseCase: loginUseCase),
+      home: IntroPage(loginUseCase: Injection().loginUseCase),
     );
   }
 }
