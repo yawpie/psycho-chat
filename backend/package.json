@@ -4,7 +4,10 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "tsx --watch src/server.ts"
+    "dev": "tsx --watch src/server.ts",
+    "seed:convos": "tsx src/scripts/convo_seed.ts",
+    "seed:users": "tsx src/scripts/user_seed.ts",
+    "seed:messages": "tsx src/scripts/message_seed.ts"
   },
   "type": "module",
   "dependencies": {

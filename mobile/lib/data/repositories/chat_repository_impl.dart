@@ -3,8 +3,8 @@ import 'package:psycho_chat/domain/entities/chat_message.dart';
 import 'package:psycho_chat/domain/repositories/chat_repository.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
-  ChatRepositoryImpl({WebSocketRemoteDatasource? datasource})
-    : _datasource = datasource ?? WebSocketRemoteDatasource();
+  ChatRepositoryImpl({required WebSocketRemoteDatasource datasource})
+    : _datasource = datasource;
 
   final WebSocketRemoteDatasource _datasource;
 
@@ -15,10 +15,15 @@ class ChatRepositoryImpl implements ChatRepository {
   bool get isConnected => _datasource.isConnected;
 
   @override
-  Future<void> connect() => _datasource.connect();
+  Future<void> connect(String username) => _datasource.connect(username);
 
   @override
-  void sendMessage(String text) => _datasource.sendMessage(text);
+  void sendMessage(
+    String text,
+    String username,
+    String receiver,
+    int conversationId,
+  ) => _datasource.sendMessage(text, username, receiver, conversationId);
 
   @override
   Future<void> disconnect() => _datasource.disconnect();

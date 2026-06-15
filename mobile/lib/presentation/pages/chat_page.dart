@@ -1,51 +1,48 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:psycho_chat/data/repositories/chat_repository_impl.dart';
-import 'package:psycho_chat/domain/entities/chat_message.dart';
-import 'package:psycho_chat/domain/repositories/chat_repository.dart';
+import 'package:psycho_chat/core/providers.dart';
+import 'package:psycho_chat/presentation/providers/chat_notifier.dart';
 import 'package:psycho_chat/presentation/widgets/message_bubble.dart';
 import 'package:psycho_chat/presentation/widgets/message_composer.dart';
 
-class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+class ChatPage extends ConsumerStatefulWidget {
+  const ChatPage({super.key, required this.convoId, required this.receiver});
+  final int convoId;
+  final String receiver;
 
   @override
-  State<ChatPage> createState() => _ChatPageState();
+  ConsumerState<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
-  final ChatRepository _repository = ChatRepositoryImpl();
+class _ChatPageState extends ConsumerState<ChatPage> {
   final ScrollController _scrollController = ScrollController();
-  final List<Message> _messages = <Message>[];
-
-  StreamSubscription<Message>? _subscription;
-  bool _isConnected = false;
-
+  late final int _currentConvoId;
+  late final String username;
   @override
   void initState() {
     super.initState();
-    _connect();
-  }
-
-  Future<void> _connect() async {
-    await _subscription?.cancel();
-    setState(() => _isConnected = false);
-
-    await _repository.connect();
-
-    _subscription = _repository.messageStream.listen((message) {
-      setState(() => _messages.add(message));
-      _scrollToBottom();
+    _currentConvoId = widget.convoId;
+    username = ref.read(usernameProvider)!;
+    // Gunakan addPostFrameCallback agar ref dapat diakses dengan aman di luar
+    // build — Kebutuhan 5.1 & 5.2.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final repo = ref.read(chatRepositoryProvider);
+      ref
+          .read(chatNotifierProvider.notifier)
+          .initialize(repo, _currentConvoId, widget.receiver);
     });
-
-    setState(() => _isConnected = _repository.isConnected);
   }
 
   void _sendMessage(String text) {
-    if (text.trim().isEmpty || !_isConnected) return;
-    _repository.sendMessage(text.trim());
+    ref.read(chatNotifierProvider.notifier).sendMessage(text);
+  }
+
+  void _reconnect() {
+    final repo = ref.read(chatRepositoryProvider);
+    ref
+        .read(chatNotifierProvider.notifier)
+        .initialize(repo, _currentConvoId, widget.receiver);
   }
 
   void _scrollToBottom() {
@@ -57,18 +54,28 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
-    _subscription?.cancel();
-    _repository.disconnect();
+    // autoDispose pada chatNotifierProvider sudah menangani cleanup secara otomatis.
     _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Watch state dari chatNotifierProvider — Kebutuhan 5.1.
+    final chatState = ref.watch(chatNotifierProvider);
+    final messages = chatState.messages;
+    final isConnected = chatState.isConnected;
+    final receiver = widget.receiver;
+
+    // Auto-scroll ketika ada pesan baru.
+    if (messages.isNotEmpty) {
+      _scrollToBottom();
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Psycho Chat',
+        title: Text(
+          receiver,
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
         ),
         centerTitle: false,
@@ -80,12 +87,12 @@ class _ChatPageState extends State<ChatPage> {
             child: Icon(
               Icons.circle,
               size: 10,
-              color: _isConnected ? Colors.green : Colors.red,
+              color: isConnected ? Colors.green : Colors.red,
             ),
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
-            onPressed: _connect,
+            onPressed: _reconnect,
             tooltip: 'Reconnect',
           ),
         ],
@@ -93,7 +100,7 @@ class _ChatPageState extends State<ChatPage> {
       body: Column(
         children: [
           Expanded(
-            child: _messages.isEmpty
+            child: messages.isEmpty
                 ? const Center(
                     child: Text(
                       'No messages yet',
@@ -106,11 +113,15 @@ class _ChatPageState extends State<ChatPage> {
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    itemCount: _messages.length,
-                    itemBuilder: (_, i) => MessageBubble(message: _messages[i]),
+                    itemCount: messages.length,
+                    itemBuilder: (_, i) => MessageBubble(
+                      message: messages[i],
+                      sender: receiver,
+                      loggedUser: username,
+                    ),
                   ),
           ),
-          MessageComposer(isConnected: _isConnected, onSend: _sendMessage),
+          MessageComposer(isConnected: isConnected, onSend: _sendMessage),
         ],
       ),
     );

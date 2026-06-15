@@ -2,32 +2,30 @@ class Message {
   const Message({
     required this.id,
     required this.sender,
-    required this.text,
-    required this.timestamp,
+    required this.message,
+    required this.createdAt,
     required this.status,
     required this.conversationId,
   });
 
-  final String id;
+  final int id;
   final String sender;
-  final String text;
-  final DateTime timestamp;
+  final String message;
+  final DateTime createdAt;
   final String status;
-  final String conversationId;
+  final int conversationId;
 }
 
 class Conversation {
-  final String id;
-  // final List<Message> messages;
-  final String user1;
-  final String user2;
+  final int id;
+  final String receiver;
+  final DateTime createdAt;
   final String? password;
 
   const Conversation({
     required this.id,
-    // required this.messages,
-    required this.user1,
-    required this.user2,
+    required this.receiver,
+    required this.createdAt,
     this.password,
   });
 }

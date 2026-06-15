@@ -1,7 +1,15 @@
 import { Router } from "express";
 import { login, register } from "../services/auth.service";
 import { validateAuthRequest } from "../middlewares/auth.middleware";
-import { createConversation, getConversationById } from "../services/convo.service";
+import {
+  addMessageToConversation,
+  createConversation,
+  getAllConversationsForUsername,
+  getConversationsWithUsernames,
+  getLastMessageByConversationId,
+  getMessagesByConversationId,
+} from "../services/convo.service";
+import { Conversation } from "../models/convo.model";
 
 const router = Router();
 
@@ -46,10 +54,33 @@ router.post("/auth/register", validateAuthRequest, async (req, res) => {
     );
   }
 });
-
-router.get("/conversations/:id", async (req, res) => {
+router.get("/convo", async (req, res) => {
   try {
-    const conversation = await getConversationById(parseInt(req.params.id));
+    const username = req.query.username;
+    if (!username || typeof username !== "string") {
+      return res.status(400).json({ message: "Username is required" });
+    }
+    const conversation = await getAllConversationsForUsername(username);
+    res.json(conversation);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch conversation" });
+  }
+});
+
+// router.get("/convo/messages/:id", async (req, res) => {
+//   try {
+//     const messages = await getMessagesByConversationId(parseInt(req.params.id));
+//     if (!messages) {
+//       return res.status(404).json({ message: "Messages not found" });
+//     }
+//     res.json(messages);
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to fetch messages" });
+//   }
+// });
+router.get("/convo/:id", async (req, res) => {
+  try {
+    const conversation = await getMessagesByConversationId(parseInt(req.params.id));
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found" });
     }
@@ -58,7 +89,21 @@ router.get("/conversations/:id", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch conversation" });
   }
 });
-router.post("/conversations", async (req, res) => {
+
+router.get("/convo/:id/last", async (req, res) => {
+  try {
+    const message = await getLastMessageByConversationId(
+      parseInt(req.params.id),
+    );
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch message" });
+  }
+});
+router.post("/convo/create", async (req, res) => {
   // Implement conversation creation logic here
   const { user1, user2 } = req.body;
   try {
@@ -69,16 +114,38 @@ router.post("/conversations", async (req, res) => {
   }
 });
 router.post("/messages", async (req, res) => {
-  // Implement message sending logic here
-  const { sender, text, conversationId } = req.body;
+  const { sender, text, conversationId, receiver } = req.body;
   try {
-    
+    if (receiver && typeof receiver === "string") {
+      const conversation: Conversation = await getConversationsWithUsernames(sender, receiver);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      const message = await addMessageToConversation(
+        conversation.id,
+        sender,
+        text.trim(),
+      );
+      return res.status(201).json(message);
+      
+    }
+    if (
+      typeof sender !== "string" ||
+      typeof text !== "string" ||
+      !text.trim() ||
+      !Number.isInteger(conversationId)
+    ) {
+      return res.status(400).json({ message: "Invalid message payload" });
+    }
+    const message = await addMessageToConversation(
+      conversationId,
+      sender,
+      text.trim(),
+    );
+    res.status(201).json(message);
   } catch (error) {
-    
+    res.status(500).json({ message: "Failed to send message" });
   }
-    
-
-  res.status(201).json({ message: "Message sent successfully" });
 });
 
 export default router;

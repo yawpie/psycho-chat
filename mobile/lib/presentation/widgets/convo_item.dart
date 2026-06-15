@@ -6,31 +6,32 @@ class ConvoItem extends StatelessWidget {
     required this.convoId,
     required this.convoTitle,
     required this.lastMessagePreview,
+    this.onTap,
   });
-  final String convoId;
+  final int convoId;
   final String convoTitle;
   final String lastMessagePreview;
+  final Function(int)? onTap;
 
   void handleTap(BuildContext context, String convoTitle) {
-    // Handle conversation item tap
-    SnackBar snackBar = SnackBar(
-      content: Text('Tapped on conversation: $convoTitle'),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    print("Conversation item tapped: $convoTitle");
+    if (onTap != null) {
+      onTap!(convoId);
+    } else {
+      SnackBar snackBar = SnackBar(
+        content: Text('Tapped on conversation: $convoTitle'),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ListTile(
-        leading: CircleAvatar(child: Icon(Icons.person)),
-        title: Text(convoTitle),
-        subtitle: Text(lastMessagePreview),
-        onTap: () =>
-            handleTap(context, convoTitle), // Handle conversation item tap
-      ),
+    return ListTile(
+      leading: CircleAvatar(child: Icon(Icons.person)),
+      title: Text(convoTitle),
+      subtitle: Text(lastMessagePreview),
+      onTap: () =>
+          handleTap(context, convoTitle), // Handle conversation item tap
     );
   }
 }

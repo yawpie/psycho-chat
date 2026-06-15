@@ -32,6 +32,7 @@ class _MessageComposerState extends State<MessageComposer> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
       child: Row(
@@ -45,7 +46,7 @@ class _MessageComposerState extends State<MessageComposer> {
               decoration: InputDecoration(
                 hintText: widget.isConnected ? 'Message...' : 'Disconnected',
                 filled: true,
-                fillColor: const Color(0xFF1A1A1A),
+                fillColor: theme.colorScheme.surfaceContainer,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
@@ -62,8 +63,9 @@ class _MessageComposerState extends State<MessageComposer> {
             onPressed: widget.isConnected ? _handleSend : null,
             icon: const Icon(Icons.send, size: 20),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF7C3AED),
-              disabledBackgroundColor: const Color(0xFF2A2A2A),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
+              disabledBackgroundColor: theme.colorScheme.surfaceContainer,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(12),
             ),

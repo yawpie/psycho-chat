@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:psycho_chat/domain/usecases/login.dart';
-import 'package:psycho_chat/presentation/pages/chat_page.dart';
+import 'package:psycho_chat/presentation/pages/pasien_chat_page.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_login_page.dart';
 
 class IntroPage extends StatelessWidget {
@@ -11,6 +10,7 @@ class IntroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -26,7 +26,7 @@ class IntroPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ChatPage()),
+                  MaterialPageRoute(builder: (context) => const PasienChatPage()),
                 );
               },
               child: Text('Pasien'),
@@ -35,10 +35,7 @@ class IntroPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 // backgroundColor: Colors.blue, // background
                 foregroundColor: Colors.white, // foreground
-                side: const BorderSide(
-                  color: Colors.blue,
-                  width: 2.0
-                )
+                side: const BorderSide(color: Colors.blue, width: 2.0),
               ),
               onPressed: () {
                 Navigator.push(
@@ -46,9 +43,12 @@ class IntroPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => PsikiaterLoginPage()),
                 );
               },
-              child: Text('Psikiater',style: TextStyle(fontWeight: FontWeight.bold),),
+              child: Text(
+                'Psikiater',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-            Spacer()
+            Spacer(),
           ],
         ),
       ),

@@ -1,25 +1,22 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:psycho_chat/core/di/injection.dart';
-import 'package:psycho_chat/domain/usecases/login.dart';
-import 'package:psycho_chat/domain/usecases/message.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_conversations_page.dart';
+import 'package:psycho_chat/presentation/providers/conversations_notifier.dart';
+import 'package:psycho_chat/presentation/providers/login_notifier.dart';
 
-class PsikiaterLoginPage extends StatefulWidget {
+class PsikiaterLoginPage extends ConsumerStatefulWidget {
   const PsikiaterLoginPage({super.key});
-  // final LoginUseCase loginUseCase;
 
   @override
-  State<PsikiaterLoginPage> createState() => _PsikiaterLoginPageState();
+  ConsumerState<PsikiaterLoginPage> createState() => _PsikiaterLoginPageState();
 }
 
-class _PsikiaterLoginPageState extends State<PsikiaterLoginPage> {
-  final LoginUseCase loginUseCase = getIt<LoginUseCase>();
+class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String _usernameText = "";
-  String _passwordText = "default password";
+  bool _showPassword = false;
 
   @override
   void dispose() {
@@ -29,43 +26,47 @@ class _PsikiaterLoginPageState extends State<PsikiaterLoginPage> {
   }
 
   Future<void> _handleSubmit() async {
-    setState(() {
-      // 3. Extract the string value using the .text property
-      _usernameText = _usernameController.text;
-      _passwordText = _passwordController.text;
-    });
-    // 4. Print the extracted string value to the console
-    print("Username: $_usernameText");
-    print("Password: $_passwordText");
-    // Implement login logic here, for example, using the AuthRepository to authenticate the user
-    // If login is successful, navigate to the conversations page
-    await loginUseCase.call(_usernameText, _passwordText);
-    navigateToChatPage();
-  }
-
-  void navigateToChatPage() {
-    // Implement navigation to chat page here
-    // For example, using Navigator.push:
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PsikiaterConversationsPage()),
-    );
+    final username = _usernameController.text;
+    final password = _passwordController.text;
+    print("Username: $username");
+    print("Password: $password");
+    try {
+      await ref.read(loginNotifierProvider.notifier).login(username, password);
+      print("Login berhasil");
+    } catch (e) {
+      print("Login gagal");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final loginState = ref.watch(loginNotifierProvider);
+    ref.listen<LoginState>(loginNotifierProvider, (previous, next) {
+      if (next.status == LoginStatus.success) {
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PsikiaterConversationsPage(),
+          ),
+          (_) => false,
+        );
+      }
+    });
+
+    final isLoading = loginState.status == LoginStatus.loading;
+
     return Scaffold(
-      appBar: AppBar(title: Text("Psikiater Login")),
+      appBar: AppBar(title: const Text("Psikiater Login")),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             spacing: 20.0,
-
             children: [
               TextField(
                 controller: _usernameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Username",
                   hintText: "Enter your username",
@@ -73,22 +74,51 @@ class _PsikiaterLoginPageState extends State<PsikiaterLoginPage> {
               ),
               TextField(
                 controller: _passwordController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Password",
                   hintText: "Enter your password",
                 ),
-                obscureText: true,
+                obscureText: !_showPassword,
               ),
+              CheckboxListTile(
+                value: _showPassword,
+                onChanged: (value) {
+                  setState(() {
+                    if (value == null) {
+                      _showPassword = false;
+                    } else {
+                      _showPassword = value;
+                    }
+                  });
+                },
+                title: const Text("Show Password"),
+              ),
+              if (loginState.status == LoginStatus.error &&
+                  loginState.errorMessage != null)
+                Text(
+                  loginState.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
               ElevatedButton(
-                onPressed: _handleSubmit,
+                onPressed: isLoading ? null : _handleSubmit,
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue,
                 ),
-                child: Text("Login"),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("Login"),
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),

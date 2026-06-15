@@ -28,32 +28,36 @@ export type AggregateConversation = {
 
 export type ConversationAvgAggregateOutputType = {
   id: number | null
+  user1Id: number | null
+  user2Id: number | null
 }
 
 export type ConversationSumAggregateOutputType = {
   id: number | null
+  user1Id: number | null
+  user2Id: number | null
 }
 
 export type ConversationMinAggregateOutputType = {
   id: number | null
-  user1: string | null
-  user2: string | null
+  user1Id: number | null
+  user2Id: number | null
   password: string | null
   createdAt: Date | null
 }
 
 export type ConversationMaxAggregateOutputType = {
   id: number | null
-  user1: string | null
-  user2: string | null
+  user1Id: number | null
+  user2Id: number | null
   password: string | null
   createdAt: Date | null
 }
 
 export type ConversationCountAggregateOutputType = {
   id: number
-  user1: number
-  user2: number
+  user1Id: number
+  user2Id: number
   password: number
   createdAt: number
   _all: number
@@ -62,32 +66,36 @@ export type ConversationCountAggregateOutputType = {
 
 export type ConversationAvgAggregateInputType = {
   id?: true
+  user1Id?: true
+  user2Id?: true
 }
 
 export type ConversationSumAggregateInputType = {
   id?: true
+  user1Id?: true
+  user2Id?: true
 }
 
 export type ConversationMinAggregateInputType = {
   id?: true
-  user1?: true
-  user2?: true
+  user1Id?: true
+  user2Id?: true
   password?: true
   createdAt?: true
 }
 
 export type ConversationMaxAggregateInputType = {
   id?: true
-  user1?: true
-  user2?: true
+  user1Id?: true
+  user2Id?: true
   password?: true
   createdAt?: true
 }
 
 export type ConversationCountAggregateInputType = {
   id?: true
-  user1?: true
-  user2?: true
+  user1Id?: true
+  user2Id?: true
   password?: true
   createdAt?: true
   _all?: true
@@ -181,8 +189,8 @@ export type ConversationGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 
 export type ConversationGroupByOutputType = {
   id: number
-  user1: string
-  user2: string
+  user1Id: number
+  user2Id: number
   password: string | null
   createdAt: Date
   _count: ConversationCountAggregateOutputType | null
@@ -212,38 +220,45 @@ export type ConversationWhereInput = {
   OR?: Prisma.ConversationWhereInput[]
   NOT?: Prisma.ConversationWhereInput | Prisma.ConversationWhereInput[]
   id?: Prisma.IntFilter<"Conversation"> | number
-  user1?: Prisma.StringFilter<"Conversation"> | string
-  user2?: Prisma.StringFilter<"Conversation"> | string
+  user1Id?: Prisma.IntFilter<"Conversation"> | number
+  user2Id?: Prisma.IntFilter<"Conversation"> | number
   password?: Prisma.StringNullableFilter<"Conversation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
+  user1?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  user2?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   messages?: Prisma.MessageListRelationFilter
 }
 
 export type ConversationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  user1?: Prisma.SortOrder
-  user2?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  user1?: Prisma.UserOrderByWithRelationInput
+  user2?: Prisma.UserOrderByWithRelationInput
   messages?: Prisma.MessageOrderByRelationAggregateInput
 }
 
 export type ConversationWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  user1Id_user2Id?: Prisma.ConversationUser1IdUser2IdCompoundUniqueInput
   AND?: Prisma.ConversationWhereInput | Prisma.ConversationWhereInput[]
   OR?: Prisma.ConversationWhereInput[]
   NOT?: Prisma.ConversationWhereInput | Prisma.ConversationWhereInput[]
-  user1?: Prisma.StringFilter<"Conversation"> | string
-  user2?: Prisma.StringFilter<"Conversation"> | string
+  user1Id?: Prisma.IntFilter<"Conversation"> | number
+  user2Id?: Prisma.IntFilter<"Conversation"> | number
   password?: Prisma.StringNullableFilter<"Conversation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
+  user1?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  user2?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   messages?: Prisma.MessageListRelationFilter
-}, "id">
+}, "id" | "user1Id_user2Id">
 
 export type ConversationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  user1?: Prisma.SortOrder
-  user2?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ConversationCountOrderByAggregateInput
@@ -258,41 +273,41 @@ export type ConversationScalarWhereWithAggregatesInput = {
   OR?: Prisma.ConversationScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ConversationScalarWhereWithAggregatesInput | Prisma.ConversationScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Conversation"> | number
-  user1?: Prisma.StringWithAggregatesFilter<"Conversation"> | string
-  user2?: Prisma.StringWithAggregatesFilter<"Conversation"> | string
+  user1Id?: Prisma.IntWithAggregatesFilter<"Conversation"> | number
+  user2Id?: Prisma.IntWithAggregatesFilter<"Conversation"> | number
   password?: Prisma.StringNullableWithAggregatesFilter<"Conversation"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Conversation"> | Date | string
 }
 
 export type ConversationCreateInput = {
-  user1: string
-  user2: string
   password?: string | null
   createdAt?: Date | string
+  user1: Prisma.UserCreateNestedOneWithoutConversationsAsUser1Input
+  user2: Prisma.UserCreateNestedOneWithoutConversationsAsUser2Input
   messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateInput = {
   id?: number
-  user1: string
-  user2: string
+  user1Id: number
+  user2Id: number
   password?: string | null
   createdAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUpdateInput = {
-  user1?: Prisma.StringFieldUpdateOperationsInput | string
-  user2?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user1?: Prisma.UserUpdateOneRequiredWithoutConversationsAsUser1NestedInput
+  user2?: Prisma.UserUpdateOneRequiredWithoutConversationsAsUser2NestedInput
   messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  user1?: Prisma.StringFieldUpdateOperationsInput | string
-  user2?: Prisma.StringFieldUpdateOperationsInput | string
+  user1Id?: Prisma.IntFieldUpdateOperationsInput | number
+  user2Id?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
@@ -300,25 +315,33 @@ export type ConversationUncheckedUpdateInput = {
 
 export type ConversationCreateManyInput = {
   id?: number
-  user1: string
-  user2: string
+  user1Id: number
+  user2Id: number
   password?: string | null
   createdAt?: Date | string
 }
 
 export type ConversationUpdateManyMutationInput = {
-  user1?: Prisma.StringFieldUpdateOperationsInput | string
-  user2?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ConversationUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  user1?: Prisma.StringFieldUpdateOperationsInput | string
-  user2?: Prisma.StringFieldUpdateOperationsInput | string
+  user1Id?: Prisma.IntFieldUpdateOperationsInput | number
+  user2Id?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ConversationListRelationFilter = {
+  every?: Prisma.ConversationWhereInput
+  some?: Prisma.ConversationWhereInput
+  none?: Prisma.ConversationWhereInput
+}
+
+export type ConversationOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type ConversationScalarRelationFilter = {
@@ -326,36 +349,129 @@ export type ConversationScalarRelationFilter = {
   isNot?: Prisma.ConversationWhereInput
 }
 
+export type ConversationUser1IdUser2IdCompoundUniqueInput = {
+  user1Id: number
+  user2Id: number
+}
+
 export type ConversationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  user1?: Prisma.SortOrder
-  user2?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type ConversationAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
 }
 
 export type ConversationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  user1?: Prisma.SortOrder
-  user2?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type ConversationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  user1?: Prisma.SortOrder
-  user2?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type ConversationSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  user1Id?: Prisma.SortOrder
+  user2Id?: Prisma.SortOrder
+}
+
+export type ConversationCreateNestedManyWithoutUser1Input = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser1Input, Prisma.ConversationUncheckedCreateWithoutUser1Input> | Prisma.ConversationCreateWithoutUser1Input[] | Prisma.ConversationUncheckedCreateWithoutUser1Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser1Input | Prisma.ConversationCreateOrConnectWithoutUser1Input[]
+  createMany?: Prisma.ConversationCreateManyUser1InputEnvelope
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+}
+
+export type ConversationCreateNestedManyWithoutUser2Input = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser2Input, Prisma.ConversationUncheckedCreateWithoutUser2Input> | Prisma.ConversationCreateWithoutUser2Input[] | Prisma.ConversationUncheckedCreateWithoutUser2Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser2Input | Prisma.ConversationCreateOrConnectWithoutUser2Input[]
+  createMany?: Prisma.ConversationCreateManyUser2InputEnvelope
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+}
+
+export type ConversationUncheckedCreateNestedManyWithoutUser1Input = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser1Input, Prisma.ConversationUncheckedCreateWithoutUser1Input> | Prisma.ConversationCreateWithoutUser1Input[] | Prisma.ConversationUncheckedCreateWithoutUser1Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser1Input | Prisma.ConversationCreateOrConnectWithoutUser1Input[]
+  createMany?: Prisma.ConversationCreateManyUser1InputEnvelope
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+}
+
+export type ConversationUncheckedCreateNestedManyWithoutUser2Input = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser2Input, Prisma.ConversationUncheckedCreateWithoutUser2Input> | Prisma.ConversationCreateWithoutUser2Input[] | Prisma.ConversationUncheckedCreateWithoutUser2Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser2Input | Prisma.ConversationCreateOrConnectWithoutUser2Input[]
+  createMany?: Prisma.ConversationCreateManyUser2InputEnvelope
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+}
+
+export type ConversationUpdateManyWithoutUser1NestedInput = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser1Input, Prisma.ConversationUncheckedCreateWithoutUser1Input> | Prisma.ConversationCreateWithoutUser1Input[] | Prisma.ConversationUncheckedCreateWithoutUser1Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser1Input | Prisma.ConversationCreateOrConnectWithoutUser1Input[]
+  upsert?: Prisma.ConversationUpsertWithWhereUniqueWithoutUser1Input | Prisma.ConversationUpsertWithWhereUniqueWithoutUser1Input[]
+  createMany?: Prisma.ConversationCreateManyUser1InputEnvelope
+  set?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  disconnect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  delete?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  update?: Prisma.ConversationUpdateWithWhereUniqueWithoutUser1Input | Prisma.ConversationUpdateWithWhereUniqueWithoutUser1Input[]
+  updateMany?: Prisma.ConversationUpdateManyWithWhereWithoutUser1Input | Prisma.ConversationUpdateManyWithWhereWithoutUser1Input[]
+  deleteMany?: Prisma.ConversationScalarWhereInput | Prisma.ConversationScalarWhereInput[]
+}
+
+export type ConversationUpdateManyWithoutUser2NestedInput = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser2Input, Prisma.ConversationUncheckedCreateWithoutUser2Input> | Prisma.ConversationCreateWithoutUser2Input[] | Prisma.ConversationUncheckedCreateWithoutUser2Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser2Input | Prisma.ConversationCreateOrConnectWithoutUser2Input[]
+  upsert?: Prisma.ConversationUpsertWithWhereUniqueWithoutUser2Input | Prisma.ConversationUpsertWithWhereUniqueWithoutUser2Input[]
+  createMany?: Prisma.ConversationCreateManyUser2InputEnvelope
+  set?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  disconnect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  delete?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  update?: Prisma.ConversationUpdateWithWhereUniqueWithoutUser2Input | Prisma.ConversationUpdateWithWhereUniqueWithoutUser2Input[]
+  updateMany?: Prisma.ConversationUpdateManyWithWhereWithoutUser2Input | Prisma.ConversationUpdateManyWithWhereWithoutUser2Input[]
+  deleteMany?: Prisma.ConversationScalarWhereInput | Prisma.ConversationScalarWhereInput[]
+}
+
+export type ConversationUncheckedUpdateManyWithoutUser1NestedInput = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser1Input, Prisma.ConversationUncheckedCreateWithoutUser1Input> | Prisma.ConversationCreateWithoutUser1Input[] | Prisma.ConversationUncheckedCreateWithoutUser1Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser1Input | Prisma.ConversationCreateOrConnectWithoutUser1Input[]
+  upsert?: Prisma.ConversationUpsertWithWhereUniqueWithoutUser1Input | Prisma.ConversationUpsertWithWhereUniqueWithoutUser1Input[]
+  createMany?: Prisma.ConversationCreateManyUser1InputEnvelope
+  set?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  disconnect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  delete?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  update?: Prisma.ConversationUpdateWithWhereUniqueWithoutUser1Input | Prisma.ConversationUpdateWithWhereUniqueWithoutUser1Input[]
+  updateMany?: Prisma.ConversationUpdateManyWithWhereWithoutUser1Input | Prisma.ConversationUpdateManyWithWhereWithoutUser1Input[]
+  deleteMany?: Prisma.ConversationScalarWhereInput | Prisma.ConversationScalarWhereInput[]
+}
+
+export type ConversationUncheckedUpdateManyWithoutUser2NestedInput = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutUser2Input, Prisma.ConversationUncheckedCreateWithoutUser2Input> | Prisma.ConversationCreateWithoutUser2Input[] | Prisma.ConversationUncheckedCreateWithoutUser2Input[]
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutUser2Input | Prisma.ConversationCreateOrConnectWithoutUser2Input[]
+  upsert?: Prisma.ConversationUpsertWithWhereUniqueWithoutUser2Input | Prisma.ConversationUpsertWithWhereUniqueWithoutUser2Input[]
+  createMany?: Prisma.ConversationCreateManyUser2InputEnvelope
+  set?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  disconnect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  delete?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  connect?: Prisma.ConversationWhereUniqueInput | Prisma.ConversationWhereUniqueInput[]
+  update?: Prisma.ConversationUpdateWithWhereUniqueWithoutUser2Input | Prisma.ConversationUpdateWithWhereUniqueWithoutUser2Input[]
+  updateMany?: Prisma.ConversationUpdateManyWithWhereWithoutUser2Input | Prisma.ConversationUpdateManyWithWhereWithoutUser2Input[]
+  deleteMany?: Prisma.ConversationScalarWhereInput | Prisma.ConversationScalarWhereInput[]
 }
 
 export type ConversationCreateNestedOneWithoutMessagesInput = {
@@ -372,17 +488,108 @@ export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ConversationUpdateToOneWithWhereWithoutMessagesInput, Prisma.ConversationUpdateWithoutMessagesInput>, Prisma.ConversationUncheckedUpdateWithoutMessagesInput>
 }
 
-export type ConversationCreateWithoutMessagesInput = {
-  user1: string
-  user2: string
+export type ConversationCreateWithoutUser1Input = {
   password?: string | null
   createdAt?: Date | string
+  user2: Prisma.UserCreateNestedOneWithoutConversationsAsUser2Input
+  messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+}
+
+export type ConversationUncheckedCreateWithoutUser1Input = {
+  id?: number
+  user2Id: number
+  password?: string | null
+  createdAt?: Date | string
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+}
+
+export type ConversationCreateOrConnectWithoutUser1Input = {
+  where: Prisma.ConversationWhereUniqueInput
+  create: Prisma.XOR<Prisma.ConversationCreateWithoutUser1Input, Prisma.ConversationUncheckedCreateWithoutUser1Input>
+}
+
+export type ConversationCreateManyUser1InputEnvelope = {
+  data: Prisma.ConversationCreateManyUser1Input | Prisma.ConversationCreateManyUser1Input[]
+}
+
+export type ConversationCreateWithoutUser2Input = {
+  password?: string | null
+  createdAt?: Date | string
+  user1: Prisma.UserCreateNestedOneWithoutConversationsAsUser1Input
+  messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+}
+
+export type ConversationUncheckedCreateWithoutUser2Input = {
+  id?: number
+  user1Id: number
+  password?: string | null
+  createdAt?: Date | string
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+}
+
+export type ConversationCreateOrConnectWithoutUser2Input = {
+  where: Prisma.ConversationWhereUniqueInput
+  create: Prisma.XOR<Prisma.ConversationCreateWithoutUser2Input, Prisma.ConversationUncheckedCreateWithoutUser2Input>
+}
+
+export type ConversationCreateManyUser2InputEnvelope = {
+  data: Prisma.ConversationCreateManyUser2Input | Prisma.ConversationCreateManyUser2Input[]
+}
+
+export type ConversationUpsertWithWhereUniqueWithoutUser1Input = {
+  where: Prisma.ConversationWhereUniqueInput
+  update: Prisma.XOR<Prisma.ConversationUpdateWithoutUser1Input, Prisma.ConversationUncheckedUpdateWithoutUser1Input>
+  create: Prisma.XOR<Prisma.ConversationCreateWithoutUser1Input, Prisma.ConversationUncheckedCreateWithoutUser1Input>
+}
+
+export type ConversationUpdateWithWhereUniqueWithoutUser1Input = {
+  where: Prisma.ConversationWhereUniqueInput
+  data: Prisma.XOR<Prisma.ConversationUpdateWithoutUser1Input, Prisma.ConversationUncheckedUpdateWithoutUser1Input>
+}
+
+export type ConversationUpdateManyWithWhereWithoutUser1Input = {
+  where: Prisma.ConversationScalarWhereInput
+  data: Prisma.XOR<Prisma.ConversationUpdateManyMutationInput, Prisma.ConversationUncheckedUpdateManyWithoutUser1Input>
+}
+
+export type ConversationScalarWhereInput = {
+  AND?: Prisma.ConversationScalarWhereInput | Prisma.ConversationScalarWhereInput[]
+  OR?: Prisma.ConversationScalarWhereInput[]
+  NOT?: Prisma.ConversationScalarWhereInput | Prisma.ConversationScalarWhereInput[]
+  id?: Prisma.IntFilter<"Conversation"> | number
+  user1Id?: Prisma.IntFilter<"Conversation"> | number
+  user2Id?: Prisma.IntFilter<"Conversation"> | number
+  password?: Prisma.StringNullableFilter<"Conversation"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
+}
+
+export type ConversationUpsertWithWhereUniqueWithoutUser2Input = {
+  where: Prisma.ConversationWhereUniqueInput
+  update: Prisma.XOR<Prisma.ConversationUpdateWithoutUser2Input, Prisma.ConversationUncheckedUpdateWithoutUser2Input>
+  create: Prisma.XOR<Prisma.ConversationCreateWithoutUser2Input, Prisma.ConversationUncheckedCreateWithoutUser2Input>
+}
+
+export type ConversationUpdateWithWhereUniqueWithoutUser2Input = {
+  where: Prisma.ConversationWhereUniqueInput
+  data: Prisma.XOR<Prisma.ConversationUpdateWithoutUser2Input, Prisma.ConversationUncheckedUpdateWithoutUser2Input>
+}
+
+export type ConversationUpdateManyWithWhereWithoutUser2Input = {
+  where: Prisma.ConversationScalarWhereInput
+  data: Prisma.XOR<Prisma.ConversationUpdateManyMutationInput, Prisma.ConversationUncheckedUpdateManyWithoutUser2Input>
+}
+
+export type ConversationCreateWithoutMessagesInput = {
+  password?: string | null
+  createdAt?: Date | string
+  user1: Prisma.UserCreateNestedOneWithoutConversationsAsUser1Input
+  user2: Prisma.UserCreateNestedOneWithoutConversationsAsUser2Input
 }
 
 export type ConversationUncheckedCreateWithoutMessagesInput = {
   id?: number
-  user1: string
-  user2: string
+  user1Id: number
+  user2Id: number
   password?: string | null
   createdAt?: Date | string
 }
@@ -404,16 +611,74 @@ export type ConversationUpdateToOneWithWhereWithoutMessagesInput = {
 }
 
 export type ConversationUpdateWithoutMessagesInput = {
-  user1?: Prisma.StringFieldUpdateOperationsInput | string
-  user2?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user1?: Prisma.UserUpdateOneRequiredWithoutConversationsAsUser1NestedInput
+  user2?: Prisma.UserUpdateOneRequiredWithoutConversationsAsUser2NestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  user1?: Prisma.StringFieldUpdateOperationsInput | string
-  user2?: Prisma.StringFieldUpdateOperationsInput | string
+  user1Id?: Prisma.IntFieldUpdateOperationsInput | number
+  user2Id?: Prisma.IntFieldUpdateOperationsInput | number
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ConversationCreateManyUser1Input = {
+  id?: number
+  user2Id: number
+  password?: string | null
+  createdAt?: Date | string
+}
+
+export type ConversationCreateManyUser2Input = {
+  id?: number
+  user1Id: number
+  password?: string | null
+  createdAt?: Date | string
+}
+
+export type ConversationUpdateWithoutUser1Input = {
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user2?: Prisma.UserUpdateOneRequiredWithoutConversationsAsUser2NestedInput
+  messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+}
+
+export type ConversationUncheckedUpdateWithoutUser1Input = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user2Id?: Prisma.IntFieldUpdateOperationsInput | number
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+}
+
+export type ConversationUncheckedUpdateManyWithoutUser1Input = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user2Id?: Prisma.IntFieldUpdateOperationsInput | number
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ConversationUpdateWithoutUser2Input = {
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user1?: Prisma.UserUpdateOneRequiredWithoutConversationsAsUser1NestedInput
+  messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+}
+
+export type ConversationUncheckedUpdateWithoutUser2Input = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user1Id?: Prisma.IntFieldUpdateOperationsInput | number
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+}
+
+export type ConversationUncheckedUpdateManyWithoutUser2Input = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user1Id?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -451,55 +716,71 @@ export type ConversationCountOutputTypeCountMessagesArgs<ExtArgs extends runtime
 
 export type ConversationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  user1?: boolean
-  user2?: boolean
+  user1Id?: boolean
+  user2Id?: boolean
   password?: boolean
   createdAt?: boolean
+  user1?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user2?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.Conversation$messagesArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversation"]>
 
 export type ConversationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  user1?: boolean
-  user2?: boolean
+  user1Id?: boolean
+  user2Id?: boolean
   password?: boolean
   createdAt?: boolean
+  user1?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user2?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversation"]>
 
 export type ConversationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  user1?: boolean
-  user2?: boolean
+  user1Id?: boolean
+  user2Id?: boolean
   password?: boolean
   createdAt?: boolean
+  user1?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user2?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversation"]>
 
 export type ConversationSelectScalar = {
   id?: boolean
-  user1?: boolean
-  user2?: boolean
+  user1Id?: boolean
+  user2Id?: boolean
   password?: boolean
   createdAt?: boolean
 }
 
-export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user1" | "user2" | "password" | "createdAt", ExtArgs["result"]["conversation"]>
+export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user1Id" | "user2Id" | "password" | "createdAt", ExtArgs["result"]["conversation"]>
 export type ConversationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user1?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user2?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.Conversation$messagesArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type ConversationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type ConversationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type ConversationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user1?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user2?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
+export type ConversationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user1?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user2?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
 
 export type $ConversationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Conversation"
   objects: {
+    user1: Prisma.$UserPayload<ExtArgs>
+    user2: Prisma.$UserPayload<ExtArgs>
     messages: Prisma.$MessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    user1: string
-    user2: string
+    user1Id: number
+    user2Id: number
     password: string | null
     createdAt: Date
   }, ExtArgs["result"]["conversation"]>
@@ -896,6 +1177,8 @@ readonly fields: ConversationFieldRefs;
  */
 export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  user1<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  user2<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   messages<T extends Prisma.Conversation$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -927,8 +1210,8 @@ export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends run
  */
 export interface ConversationFieldRefs {
   readonly id: Prisma.FieldRef<"Conversation", 'Int'>
-  readonly user1: Prisma.FieldRef<"Conversation", 'String'>
-  readonly user2: Prisma.FieldRef<"Conversation", 'String'>
+  readonly user1Id: Prisma.FieldRef<"Conversation", 'Int'>
+  readonly user2Id: Prisma.FieldRef<"Conversation", 'Int'>
   readonly password: Prisma.FieldRef<"Conversation", 'String'>
   readonly createdAt: Prisma.FieldRef<"Conversation", 'DateTime'>
 }
@@ -1183,6 +1466,10 @@ export type ConversationCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many Conversations.
    */
   data: Prisma.ConversationCreateManyInput | Prisma.ConversationCreateManyInput[]
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1253,6 +1540,10 @@ export type ConversationUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * Limit how many Conversations to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**

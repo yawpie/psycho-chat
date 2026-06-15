@@ -26,6 +26,8 @@ export async function register(username: string, rawPassword?: string): Promise<
 
 export async function login(username: string, rawPassword?: string): Promise<User> {
     // Find the user by username
+    console.log(username, rawPassword);
+    
     const user = await prisma.user.findUnique({
         where: { username },
     });
@@ -33,7 +35,8 @@ export async function login(username: string, rawPassword?: string): Promise<Use
     if (!user) {
         throw new Error("User not found");
     }
-
+    console.log(user);
+    
     // Compare the provided password with the hashed password
     const isMatch = await bcrypt.compare(rawPassword || "defaultpassword", user.password);
 
@@ -43,7 +46,7 @@ export async function login(username: string, rawPassword?: string): Promise<Use
     const returnUser : User = {
         id: user.id,
         username: user.username,
-        description: user.description || undefined,
+        description: user.description || null,
         
     }
     return returnUser;

@@ -217,23 +217,12 @@ class $ConversationsTable extends Conversations
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _user1Meta = const VerificationMeta('user1');
-  @override
-  late final GeneratedColumn<String> user1 = GeneratedColumn<String>(
-    'user1',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 50,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
+  static const VerificationMeta _receiverMeta = const VerificationMeta(
+    'receiver',
   );
-  static const VerificationMeta _user2Meta = const VerificationMeta('user2');
   @override
-  late final GeneratedColumn<String> user2 = GeneratedColumn<String>(
-    'user2',
+  late final GeneratedColumn<String> receiver = GeneratedColumn<String>(
+    'receiver',
     aliasedName,
     false,
     additionalChecks: GeneratedColumn.checkTextLength(
@@ -258,8 +247,20 @@ class $ConversationsTable extends Conversations
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, user1, user2, password];
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, receiver, password, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -275,26 +276,24 @@ class $ConversationsTable extends Conversations
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('user1')) {
+    if (data.containsKey('receiver')) {
       context.handle(
-        _user1Meta,
-        user1.isAcceptableOrUnknown(data['user1']!, _user1Meta),
+        _receiverMeta,
+        receiver.isAcceptableOrUnknown(data['receiver']!, _receiverMeta),
       );
     } else if (isInserting) {
-      context.missing(_user1Meta);
-    }
-    if (data.containsKey('user2')) {
-      context.handle(
-        _user2Meta,
-        user2.isAcceptableOrUnknown(data['user2']!, _user2Meta),
-      );
-    } else if (isInserting) {
-      context.missing(_user2Meta);
+      context.missing(_receiverMeta);
     }
     if (data.containsKey('password')) {
       context.handle(
         _passwordMeta,
         password.isAcceptableOrUnknown(data['password']!, _passwordMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
     }
     return context;
@@ -310,18 +309,18 @@ class $ConversationsTable extends Conversations
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      user1: attachedDatabase.typeMapping.read(
+      receiver: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}user1'],
-      )!,
-      user2: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user2'],
+        data['${effectivePrefix}receiver'],
       )!,
       password: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}password'],
       ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
     );
   }
 
@@ -333,35 +332,35 @@ class $ConversationsTable extends Conversations
 
 class Conversation extends DataClass implements Insertable<Conversation> {
   final int id;
-  final String user1;
-  final String user2;
+  final String receiver;
   final String? password;
+  final DateTime createdAt;
   const Conversation({
     required this.id,
-    required this.user1,
-    required this.user2,
+    required this.receiver,
     this.password,
+    required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['user1'] = Variable<String>(user1);
-    map['user2'] = Variable<String>(user2);
+    map['receiver'] = Variable<String>(receiver);
     if (!nullToAbsent || password != null) {
       map['password'] = Variable<String>(password);
     }
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
   ConversationsCompanion toCompanion(bool nullToAbsent) {
     return ConversationsCompanion(
       id: Value(id),
-      user1: Value(user1),
-      user2: Value(user2),
+      receiver: Value(receiver),
       password: password == null && nullToAbsent
           ? const Value.absent()
           : Value(password),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -372,9 +371,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Conversation(
       id: serializer.fromJson<int>(json['id']),
-      user1: serializer.fromJson<String>(json['user1']),
-      user2: serializer.fromJson<String>(json['user2']),
+      receiver: serializer.fromJson<String>(json['receiver']),
       password: serializer.fromJson<String?>(json['password']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -382,29 +381,29 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'user1': serializer.toJson<String>(user1),
-      'user2': serializer.toJson<String>(user2),
+      'receiver': serializer.toJson<String>(receiver),
       'password': serializer.toJson<String?>(password),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
   Conversation copyWith({
     int? id,
-    String? user1,
-    String? user2,
+    String? receiver,
     Value<String?> password = const Value.absent(),
+    DateTime? createdAt,
   }) => Conversation(
     id: id ?? this.id,
-    user1: user1 ?? this.user1,
-    user2: user2 ?? this.user2,
+    receiver: receiver ?? this.receiver,
     password: password.present ? password.value : this.password,
+    createdAt: createdAt ?? this.createdAt,
   );
   Conversation copyWithCompanion(ConversationsCompanion data) {
     return Conversation(
       id: data.id.present ? data.id.value : this.id,
-      user1: data.user1.present ? data.user1.value : this.user1,
-      user2: data.user2.present ? data.user2.value : this.user2,
+      receiver: data.receiver.present ? data.receiver.value : this.receiver,
       password: data.password.present ? data.password.value : this.password,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -412,68 +411,67 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   String toString() {
     return (StringBuffer('Conversation(')
           ..write('id: $id, ')
-          ..write('user1: $user1, ')
-          ..write('user2: $user2, ')
-          ..write('password: $password')
+          ..write('receiver: $receiver, ')
+          ..write('password: $password, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, user1, user2, password);
+  int get hashCode => Object.hash(id, receiver, password, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Conversation &&
           other.id == this.id &&
-          other.user1 == this.user1 &&
-          other.user2 == this.user2 &&
-          other.password == this.password);
+          other.receiver == this.receiver &&
+          other.password == this.password &&
+          other.createdAt == this.createdAt);
 }
 
 class ConversationsCompanion extends UpdateCompanion<Conversation> {
   final Value<int> id;
-  final Value<String> user1;
-  final Value<String> user2;
+  final Value<String> receiver;
   final Value<String?> password;
+  final Value<DateTime> createdAt;
   const ConversationsCompanion({
     this.id = const Value.absent(),
-    this.user1 = const Value.absent(),
-    this.user2 = const Value.absent(),
+    this.receiver = const Value.absent(),
     this.password = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   ConversationsCompanion.insert({
     this.id = const Value.absent(),
-    required String user1,
-    required String user2,
+    required String receiver,
     this.password = const Value.absent(),
-  }) : user1 = Value(user1),
-       user2 = Value(user2);
+    this.createdAt = const Value.absent(),
+  }) : receiver = Value(receiver);
   static Insertable<Conversation> custom({
     Expression<int>? id,
-    Expression<String>? user1,
-    Expression<String>? user2,
+    Expression<String>? receiver,
     Expression<String>? password,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (user1 != null) 'user1': user1,
-      if (user2 != null) 'user2': user2,
+      if (receiver != null) 'receiver': receiver,
       if (password != null) 'password': password,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
   ConversationsCompanion copyWith({
     Value<int>? id,
-    Value<String>? user1,
-    Value<String>? user2,
+    Value<String>? receiver,
     Value<String?>? password,
+    Value<DateTime>? createdAt,
   }) {
     return ConversationsCompanion(
       id: id ?? this.id,
-      user1: user1 ?? this.user1,
-      user2: user2 ?? this.user2,
+      receiver: receiver ?? this.receiver,
       password: password ?? this.password,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -483,14 +481,14 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (user1.present) {
-      map['user1'] = Variable<String>(user1.value);
-    }
-    if (user2.present) {
-      map['user2'] = Variable<String>(user2.value);
+    if (receiver.present) {
+      map['receiver'] = Variable<String>(receiver.value);
     }
     if (password.present) {
       map['password'] = Variable<String>(password.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     return map;
   }
@@ -499,9 +497,9 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
   String toString() {
     return (StringBuffer('ConversationsCompanion(')
           ..write('id: $id, ')
-          ..write('user1: $user1, ')
-          ..write('user2: $user2, ')
-          ..write('password: $password')
+          ..write('receiver: $receiver, ')
+          ..write('password: $password, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -535,7 +533,9 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    $customConstraints: 'REFERENCES conversations(id)',
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES conversations (id)',
+    ),
   );
   static const VerificationMeta _senderMeta = const VerificationMeta('sender');
   @override
@@ -561,16 +561,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _timestampMeta = const VerificationMeta(
-    'timestamp',
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
   );
   @override
-  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
-    'timestamp',
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
   );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
@@ -583,7 +584,8 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
       maxTextLength: 20,
     ),
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -591,7 +593,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     conversationId,
     sender,
     message,
-    timestamp,
+    createdAt,
     status,
   ];
   @override
@@ -634,21 +636,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     } else if (isInserting) {
       context.missing(_messageMeta);
     }
-    if (data.containsKey('timestamp')) {
+    if (data.containsKey('created_at')) {
       context.handle(
-        _timestampMeta,
-        timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta),
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_timestampMeta);
     }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
-    } else if (isInserting) {
-      context.missing(_statusMeta);
     }
     return context;
   }
@@ -675,9 +673,9 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
         DriftSqlType.string,
         data['${effectivePrefix}message'],
       )!,
-      timestamp: attachedDatabase.typeMapping.read(
+      createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}timestamp'],
+        data['${effectivePrefix}created_at'],
       )!,
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -697,14 +695,14 @@ class Message extends DataClass implements Insertable<Message> {
   final int? conversationId;
   final String sender;
   final String message;
-  final DateTime timestamp;
+  final DateTime createdAt;
   final String status;
   const Message({
     required this.id,
     this.conversationId,
     required this.sender,
     required this.message,
-    required this.timestamp,
+    required this.createdAt,
     required this.status,
   });
   @override
@@ -716,7 +714,7 @@ class Message extends DataClass implements Insertable<Message> {
     }
     map['sender'] = Variable<String>(sender);
     map['message'] = Variable<String>(message);
-    map['timestamp'] = Variable<DateTime>(timestamp);
+    map['created_at'] = Variable<DateTime>(createdAt);
     map['status'] = Variable<String>(status);
     return map;
   }
@@ -729,7 +727,7 @@ class Message extends DataClass implements Insertable<Message> {
           : Value(conversationId),
       sender: Value(sender),
       message: Value(message),
-      timestamp: Value(timestamp),
+      createdAt: Value(createdAt),
       status: Value(status),
     );
   }
@@ -744,7 +742,7 @@ class Message extends DataClass implements Insertable<Message> {
       conversationId: serializer.fromJson<int?>(json['conversationId']),
       sender: serializer.fromJson<String>(json['sender']),
       message: serializer.fromJson<String>(json['message']),
-      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       status: serializer.fromJson<String>(json['status']),
     );
   }
@@ -756,7 +754,7 @@ class Message extends DataClass implements Insertable<Message> {
       'conversationId': serializer.toJson<int?>(conversationId),
       'sender': serializer.toJson<String>(sender),
       'message': serializer.toJson<String>(message),
-      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
       'status': serializer.toJson<String>(status),
     };
   }
@@ -766,7 +764,7 @@ class Message extends DataClass implements Insertable<Message> {
     Value<int?> conversationId = const Value.absent(),
     String? sender,
     String? message,
-    DateTime? timestamp,
+    DateTime? createdAt,
     String? status,
   }) => Message(
     id: id ?? this.id,
@@ -775,7 +773,7 @@ class Message extends DataClass implements Insertable<Message> {
         : this.conversationId,
     sender: sender ?? this.sender,
     message: message ?? this.message,
-    timestamp: timestamp ?? this.timestamp,
+    createdAt: createdAt ?? this.createdAt,
     status: status ?? this.status,
   );
   Message copyWithCompanion(MessagesCompanion data) {
@@ -786,7 +784,7 @@ class Message extends DataClass implements Insertable<Message> {
           : this.conversationId,
       sender: data.sender.present ? data.sender.value : this.sender,
       message: data.message.present ? data.message.value : this.message,
-      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       status: data.status.present ? data.status.value : this.status,
     );
   }
@@ -798,7 +796,7 @@ class Message extends DataClass implements Insertable<Message> {
           ..write('conversationId: $conversationId, ')
           ..write('sender: $sender, ')
           ..write('message: $message, ')
-          ..write('timestamp: $timestamp, ')
+          ..write('createdAt: $createdAt, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
@@ -806,7 +804,7 @@ class Message extends DataClass implements Insertable<Message> {
 
   @override
   int get hashCode =>
-      Object.hash(id, conversationId, sender, message, timestamp, status);
+      Object.hash(id, conversationId, sender, message, createdAt, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -815,7 +813,7 @@ class Message extends DataClass implements Insertable<Message> {
           other.conversationId == this.conversationId &&
           other.sender == this.sender &&
           other.message == this.message &&
-          other.timestamp == this.timestamp &&
+          other.createdAt == this.createdAt &&
           other.status == this.status);
 }
 
@@ -824,14 +822,14 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   final Value<int?> conversationId;
   final Value<String> sender;
   final Value<String> message;
-  final Value<DateTime> timestamp;
+  final Value<DateTime> createdAt;
   final Value<String> status;
   const MessagesCompanion({
     this.id = const Value.absent(),
     this.conversationId = const Value.absent(),
     this.sender = const Value.absent(),
     this.message = const Value.absent(),
-    this.timestamp = const Value.absent(),
+    this.createdAt = const Value.absent(),
     this.status = const Value.absent(),
   });
   MessagesCompanion.insert({
@@ -839,18 +837,16 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     this.conversationId = const Value.absent(),
     required String sender,
     required String message,
-    required DateTime timestamp,
-    required String status,
+    this.createdAt = const Value.absent(),
+    this.status = const Value.absent(),
   }) : sender = Value(sender),
-       message = Value(message),
-       timestamp = Value(timestamp),
-       status = Value(status);
+       message = Value(message);
   static Insertable<Message> custom({
     Expression<int>? id,
     Expression<int>? conversationId,
     Expression<String>? sender,
     Expression<String>? message,
-    Expression<DateTime>? timestamp,
+    Expression<DateTime>? createdAt,
     Expression<String>? status,
   }) {
     return RawValuesInsertable({
@@ -858,7 +854,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       if (conversationId != null) 'conversation_id': conversationId,
       if (sender != null) 'sender': sender,
       if (message != null) 'message': message,
-      if (timestamp != null) 'timestamp': timestamp,
+      if (createdAt != null) 'created_at': createdAt,
       if (status != null) 'status': status,
     });
   }
@@ -868,7 +864,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     Value<int?>? conversationId,
     Value<String>? sender,
     Value<String>? message,
-    Value<DateTime>? timestamp,
+    Value<DateTime>? createdAt,
     Value<String>? status,
   }) {
     return MessagesCompanion(
@@ -876,7 +872,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       conversationId: conversationId ?? this.conversationId,
       sender: sender ?? this.sender,
       message: message ?? this.message,
-      timestamp: timestamp ?? this.timestamp,
+      createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
     );
   }
@@ -896,8 +892,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     if (message.present) {
       map['message'] = Variable<String>(message.value);
     }
-    if (timestamp.present) {
-      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
@@ -912,7 +908,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
           ..write('conversationId: $conversationId, ')
           ..write('sender: $sender, ')
           ..write('message: $message, ')
-          ..write('timestamp: $timestamp, ')
+          ..write('createdAt: $createdAt, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
@@ -1057,16 +1053,16 @@ typedef $$UsersTableProcessedTableManager =
 typedef $$ConversationsTableCreateCompanionBuilder =
     ConversationsCompanion Function({
       Value<int> id,
-      required String user1,
-      required String user2,
+      required String receiver,
       Value<String?> password,
+      Value<DateTime> createdAt,
     });
 typedef $$ConversationsTableUpdateCompanionBuilder =
     ConversationsCompanion Function({
       Value<int> id,
-      Value<String> user1,
-      Value<String> user2,
+      Value<String> receiver,
       Value<String?> password,
+      Value<DateTime> createdAt,
     });
 
 final class $$ConversationsTableReferences
@@ -1114,18 +1110,18 @@ class $$ConversationsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get user1 => $composableBuilder(
-    column: $table.user1,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get user2 => $composableBuilder(
-    column: $table.user2,
+  ColumnFilters<String> get receiver => $composableBuilder(
+    column: $table.receiver,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get password => $composableBuilder(
     column: $table.password,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1169,18 +1165,18 @@ class $$ConversationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get user1 => $composableBuilder(
-    column: $table.user1,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get user2 => $composableBuilder(
-    column: $table.user2,
+  ColumnOrderings<String> get receiver => $composableBuilder(
+    column: $table.receiver,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<String> get password => $composableBuilder(
     column: $table.password,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -1197,14 +1193,14 @@ class $$ConversationsTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get user1 =>
-      $composableBuilder(column: $table.user1, builder: (column) => column);
-
-  GeneratedColumn<String> get user2 =>
-      $composableBuilder(column: $table.user2, builder: (column) => column);
+  GeneratedColumn<String> get receiver =>
+      $composableBuilder(column: $table.receiver, builder: (column) => column);
 
   GeneratedColumn<String> get password =>
       $composableBuilder(column: $table.password, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   Expression<T> messagesRefs<T extends Object>(
     Expression<T> Function($$MessagesTableAnnotationComposer a) f,
@@ -1261,26 +1257,26 @@ class $$ConversationsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> user1 = const Value.absent(),
-                Value<String> user2 = const Value.absent(),
+                Value<String> receiver = const Value.absent(),
                 Value<String?> password = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => ConversationsCompanion(
                 id: id,
-                user1: user1,
-                user2: user2,
+                receiver: receiver,
                 password: password,
+                createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String user1,
-                required String user2,
+                required String receiver,
                 Value<String?> password = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => ConversationsCompanion.insert(
                 id: id,
-                user1: user1,
-                user2: user2,
+                receiver: receiver,
                 password: password,
+                createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -1346,8 +1342,8 @@ typedef $$MessagesTableCreateCompanionBuilder =
       Value<int?> conversationId,
       required String sender,
       required String message,
-      required DateTime timestamp,
-      required String status,
+      Value<DateTime> createdAt,
+      Value<String> status,
     });
 typedef $$MessagesTableUpdateCompanionBuilder =
     MessagesCompanion Function({
@@ -1355,7 +1351,7 @@ typedef $$MessagesTableUpdateCompanionBuilder =
       Value<int?> conversationId,
       Value<String> sender,
       Value<String> message,
-      Value<DateTime> timestamp,
+      Value<DateTime> createdAt,
       Value<String> status,
     });
 
@@ -1407,8 +1403,8 @@ class $$MessagesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get timestamp => $composableBuilder(
-    column: $table.timestamp,
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1465,8 +1461,8 @@ class $$MessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
-    column: $table.timestamp,
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1517,8 +1513,8 @@ class $$MessagesTableAnnotationComposer
   GeneratedColumn<String> get message =>
       $composableBuilder(column: $table.message, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get timestamp =>
-      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
@@ -1579,14 +1575,14 @@ class $$MessagesTableTableManager
                 Value<int?> conversationId = const Value.absent(),
                 Value<String> sender = const Value.absent(),
                 Value<String> message = const Value.absent(),
-                Value<DateTime> timestamp = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
               }) => MessagesCompanion(
                 id: id,
                 conversationId: conversationId,
                 sender: sender,
                 message: message,
-                timestamp: timestamp,
+                createdAt: createdAt,
                 status: status,
               ),
           createCompanionCallback:
@@ -1595,14 +1591,14 @@ class $$MessagesTableTableManager
                 Value<int?> conversationId = const Value.absent(),
                 required String sender,
                 required String message,
-                required DateTime timestamp,
-                required String status,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
               }) => MessagesCompanion.insert(
                 id: id,
                 conversationId: conversationId,
                 sender: sender,
                 message: message,
-                timestamp: timestamp,
+                createdAt: createdAt,
                 status: status,
               ),
           withReferenceMapper: (p0) => p0

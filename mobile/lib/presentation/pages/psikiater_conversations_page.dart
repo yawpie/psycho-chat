@@ -1,68 +1,144 @@
 import 'package:flutter/material.dart';
-import 'package:psycho_chat/core/di/injection.dart';
-import 'package:psycho_chat/domain/usecases/message.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:psycho_chat/presentation/pages/chat_page.dart';
+import 'package:psycho_chat/presentation/pages/intro_page.dart';
+import 'package:psycho_chat/presentation/pages/settings_page.dart';
+import 'package:psycho_chat/presentation/providers/conversations_notifier.dart';
+import 'package:psycho_chat/presentation/providers/login_notifier.dart';
 import 'package:psycho_chat/presentation/widgets/convo_item.dart';
 
-class PsikiaterConversationsPage extends StatefulWidget {
+class PsikiaterConversationsPage extends ConsumerStatefulWidget {
   const PsikiaterConversationsPage({super.key});
-  // final MessageUseCase messageUseCase;
+
   @override
-  State<PsikiaterConversationsPage> createState() =>
+  ConsumerState<PsikiaterConversationsPage> createState() =>
       _PsikiaterConversationsPageState();
 }
 
 class _PsikiaterConversationsPageState
-    extends State<PsikiaterConversationsPage> {
-  final MessageUseCase messageUseCase = getIt<MessageUseCase>();
+    extends ConsumerState<PsikiaterConversationsPage> {
   final ScrollController _scrollController = ScrollController();
-
-  List<Map<String, String>> conversations = [];
-  bool _isLoading = false;
-  int _page = 1;
 
   @override
   void initState() {
     super.initState();
-    // _fetchMoreData(); // Initial load
-
-    // Attach listener to track scroll updates
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(conversationsNotifierProvider.notifier).fetchConversations();
+      print("fetch convo berhasil");
+    });
+    // ref.read(conversationsNotifierProvider.notifier).fetchConversations();
     _scrollController.addListener(() {
-      // Check if user scrolled near the bottom (within 200 pixels)
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        // _fetchMoreData();
+        // Pagination can be implemented here in the future
       }
     });
   }
 
-  //todo implement fetching conversations from repository and display them in the listview using convoitem widget
-  void fetchConversations() {
-    // Implement fetching conversations from repository here
-    setState(() {
-      _isLoading = true;
-    });
-    const username = "psikiater_username"; // Replace with actual username
-    messageUseCase.getConversationsForUser(username);
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(conversationsNotifierProvider);
+
+    print("isLoading: ${state.isLoading}");
+    print("error: ${state.errorMessage}");
+    print("conversations: ${state.conversations.length}");
+
+    ref.listen(loginNotifierProvider, (previous, next) {
+      if (next.status == LoginStatus.idle) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const IntroPage()),
+          (_) => false,
+        );
+      }
+    });
+    if (state.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (state.errorMessage != null) {
+      return Scaffold(
+        body: Column(
+          children: [
+            Spacer(),
+            Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue,
+              ),
+              onPressed: () {
+                ref.read(loginNotifierProvider.notifier).logout();
+              },
+              child: const Text("Logout"),
+            ),
+            Spacer(),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
-      body: ListView(
-        controller: _scrollController,
-        children: [
-          ConvoItem(
-            convoId: "1",
-            convoTitle: "Conversation with User A",
-            lastMessagePreview: "Last message preview goes here...",
-          ),
-          ConvoItem(
-            convoId: "2",
-            convoTitle: "Conversation with User B",
-            lastMessagePreview: "Last message preview goes here...",
-          ),
-          // Add more ConvoItems as needed
+      appBar: AppBar(
+        title: const Text('Percakapan Psikiater'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+          )
         ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref
+              .read(conversationsNotifierProvider.notifier)
+              .fetchConversations();
+        },
+        child: state.conversations.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 300),
+                  Center(child: Text('Belum ada percakapan')),
+                ],
+              )
+            : ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: state.conversations.length,
+                itemBuilder: (_, i) => ConvoItem(
+                  convoId: state.conversations[i].id,
+                  convoTitle: state.conversations[i].receiver,
+                  lastMessagePreview: '',
+                  onTap: (convoId) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatPage(
+                          convoId: convoId,
+                          receiver: state.conversations[i].receiver,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
       ),
     );
   }
