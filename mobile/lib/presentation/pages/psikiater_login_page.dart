@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_conversations_page.dart';
-import 'package:psycho_chat/presentation/providers/conversations_notifier.dart';
 import 'package:psycho_chat/presentation/providers/login_notifier.dart';
 
 class PsikiaterLoginPage extends ConsumerStatefulWidget {
@@ -19,6 +18,19 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
   bool _showPassword = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // memaksa aplikasi untuk menghilangkan data user yang mungkin masih
+      // tersimpan di StateProvider saat logout, agar tidak ada kasus "ghost login"
+      // di mana username masih terbaca di StateProvider padahal sudah logout.
+      // ini temporary solution untuk memastikan state benar-benar bersih ketika
+      // baru login
+      await ref.read(loginNotifierProvider.notifier).logout();
+    });
+  }
+
+  @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
@@ -30,20 +42,33 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
     final password = _passwordController.text;
     print("Username: $username");
     print("Password: $password");
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Username dan password tidak boleh kosong"),
+        ),
+      );
+      return;
+    }
     try {
       await ref.read(loginNotifierProvider.notifier).login(username, password);
       print("Login berhasil");
     } catch (e) {
       print("Login gagal");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Login gagal. Silakan coba lagi."),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final loginState = ref.watch(loginNotifierProvider);
     ref.listen<LoginState>(loginNotifierProvider, (previous, next) {
       if (next.status == LoginStatus.success) {
-
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -57,69 +82,107 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
     final isLoading = loginState.status == LoginStatus.loading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Psikiater Login")),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            spacing: 20.0,
-            children: [
-              TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Username",
-                  hintText: "Enter your username",
-                ),
-              ),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Password",
-                  hintText: "Enter your password",
-                ),
-                obscureText: !_showPassword,
-              ),
-              CheckboxListTile(
-                value: _showPassword,
-                onChanged: (value) {
-                  setState(() {
-                    if (value == null) {
-                      _showPassword = false;
-                    } else {
-                      _showPassword = value;
-                    }
-                  });
-                },
-                title: const Text("Show Password"),
-              ),
-              if (loginState.status == LoginStatus.error &&
-                  loginState.errorMessage != null)
-                Text(
-                  loginState.errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-              ElevatedButton(
-                onPressed: isLoading ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                // text alignment to left
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Username"),
+                  TextField(
+                    autofillHints: const [AutofillHints.username],
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.person_outline),
+                      hintText: "Enter your username",
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainer,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text("Password"),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          autofillHints: const [AutofillHints.password],
+                          controller: _passwordController,
+
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                              icon: Icon(
+                                !_showPassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
+                            ),
+                            hintText: "Enter your password",
+                            filled: true,
+                            fillColor: theme.colorScheme.surfaceContainer,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          obscureText: !_showPassword,
                         ),
-                      )
-                    : const Text("Login"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (loginState.status == LoginStatus.error &&
+                      loginState.errorMessage != null)
+                    Text(
+                      loginState.errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : _handleSubmit,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      backgroundColor: theme.colorScheme.primary,
+                      minimumSize: const Size(double.infinity, 48),
+                    ),
+
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text("Login"),
+                  ),
+                ],
               ),
-              const Spacer(),
-            ],
+            ),
           ),
         ),
       ),

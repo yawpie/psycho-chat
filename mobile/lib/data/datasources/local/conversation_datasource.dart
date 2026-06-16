@@ -15,10 +15,12 @@ class ConversationLocalDataSource {
     return database.select(database.conversations).get();
   }
 
-  Future<void> createConversation(String receiver) {
+  Future<void> createConversation(String receiver, String conversationId) {
     return database
         .into(database.conversations)
-        .insert(ConversationsCompanion.insert(receiver: receiver));
+        .insert(
+          ConversationsCompanion.insert(receiver: receiver, id: conversationId),
+        );
   }
 
   Future<void> writeRemoteConvoToLocal(
@@ -36,6 +38,7 @@ class ConversationLocalDataSource {
               ConversationsCompanion(
                 id: Value(convo.id),
                 receiver: Value(convo.receiver),
+                displayName: Value(convo.displayName),
                 password: Value(convo.password),
                 createdAt: Value(convo.createdAt),
               ),
@@ -47,30 +50,11 @@ class ConversationLocalDataSource {
     }
   }
 
-  Future<void> writeRemoteMessagesToLocal(
-    List<message_model.MessageModel> messages,
-  ) async {
-    try {
-      print("mengisi pesan...");
-      for (var message in messages) {
-        print("mengisi pesan: $message");
-        await database
-            .into(database.messages)
-            .insertOnConflictUpdate(
-              MessagesCompanion(
-                id: Value(message.id),
-                conversationId: Value(message.conversationId),
-                sender: Value(message.sender),
-                message: Value(message.message),
-                createdAt: Value(message.createdAt),
-                status: Value(message.status),
-              ),
-            );
-      }
-    } catch (e) {
-      print(e);
-      throw Exception('Failed to write remote messages to local database');
-    }
+  Future<bool> checkIfConversationExists(String conversationId) async {
+    final convo = await (database.select(
+      database.conversations,
+    )..where((c) => c.id.equals(conversationId))).getSingleOrNull();
+    return convo != null;
   }
 
   Future<List<Conversation>> getConversationsFromLocal() {
@@ -80,9 +64,13 @@ class ConversationLocalDataSource {
     return database.select(database.conversations).get();
   }
 
-  Future<void> deleteConversation(int id) {
+  Future<void> deleteConversation(String id) {
     return (database.delete(
       database.conversations,
     )..where((c) => c.id.equals(id))).go();
+  }
+
+  Future<void> clearAllConvos() {
+    return database.delete(database.conversations).go();
   }
 }

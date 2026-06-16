@@ -9,7 +9,13 @@ abstract class ChatRepository {
     String text,
     String username,
     String receiver,
-    int conversationId,
+    String conversationId,
+    String clientMessageId,
   );
+  Future<void> fetchMessages(String conversationId);
+  Future<List<Message>> getMessagesForConversation(String conversationId);
+
+  Future<void> updateMessageStatus(String clientMessageId, String status);
   Future<void> disconnect();
+  Future<void> clearLocalConversations();
 }

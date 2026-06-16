@@ -1,10 +1,16 @@
 import { prisma } from "../config/prisma";
 import { Conversation, Message } from "../models/convo.model";
 import { User } from "../models/user.model";
+import bcrypt from "bcrypt";
+import {
+  _getUserDataById,
+  _getUserDataByUsername,
+} from "../utils/getUserHelper";
 
 export async function createConversation(
   user1: string,
   user2: string,
+  password?: string,
 ): Promise<Conversation> {
   try {
     const user1Data = await _getUserDataByUsername(user1);
@@ -22,45 +28,30 @@ export async function createConversation(
       data: {
         user1Id: user1Id,
         user2Id: user2Id,
+        password: bcrypt.hashSync(password || "password", 10),
       },
     });
     const convoWithUsernames: Conversation = {
       id: conversation.id,
       user1: user1Data.username,
       user2: user2Data.username,
+      user1DisplayName: user1Data.description,
+      user2DisplayName: user2Data.description,
       createdAt: conversation.createdAt,
       password: conversation.password,
     };
     return convoWithUsernames;
   } catch (error) {
+    console.error(error);
+
     throw new Error(
       `Failed to create conversation: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
 
-async function _getUserDataById(userId: number): Promise<User> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-  if (!user) {
-    throw new Error(`User not found: ${userId}`);
-  }
-  return user;
-}
-
-async function _getUserDataByUsername(username: string): Promise<User> {
-  const user = await prisma.user.findUnique({
-    where: { username },
-  });
-  if (!user) {
-    throw new Error(`User not found: ${username}`);
-  }
-  return user;
-}
-
 export async function getLastMessageByConversationId(
-  convoId: number,
+  convoId: string,
 ): Promise<Message> {
   const message = await prisma.message.findFirstOrThrow({
     where: {
@@ -76,7 +67,7 @@ export async function getLastMessageByConversationId(
           username: true,
         },
       },
-      text: true,
+      message: true,
       createdAt: true,
       conversationId: true,
     },
@@ -85,7 +76,7 @@ export async function getLastMessageByConversationId(
   const formattedMessage: Message = {
     id: message.id,
     sender: message.sender.username,
-    message: message.text,
+    message: message.message,
     createdAt: message.createdAt,
     conversationId: message.conversationId,
   };
@@ -110,11 +101,13 @@ export async function getAllConversationsForUsername(
         user1: {
           select: {
             username: true,
+            description: true,
           },
         },
         user2: {
           select: {
             username: true,
+            description: true,
           },
         },
       },
@@ -124,6 +117,8 @@ export async function getAllConversationsForUsername(
       id: convo.id,
       user1: convo.user1.username,
       user2: convo.user2.username,
+      user1DisplayName: convo.user1.description,
+      user2DisplayName: convo.user2.description,
       createdAt: convo.createdAt,
       password: convo.password,
     }));
@@ -159,12 +154,15 @@ export async function getConversationsWithUsernames(
       user1: {
         select: {
           username: true,
+          description: true,
         },
       },
       user2: {
         select: {
           username: true,
-        },      },
+          description: true,
+        },
+      },
     },
   });
   if (!conversation) {
@@ -176,6 +174,8 @@ export async function getConversationsWithUsernames(
     id: conversation.id,
     user1: conversation.user1.username,
     user2: conversation.user2.username,
+    user1DisplayName: conversation.user1.description,
+    user2DisplayName: conversation.user2.description,
     createdAt: conversation.createdAt,
     password: conversation.password,
   };
@@ -183,7 +183,7 @@ export async function getConversationsWithUsernames(
 }
 
 export async function getMessagesByConversationId(
-  conversationId: number,
+  conversationId: string,
 ): Promise<Message[]> {
   const messages = await prisma.message.findMany({
     where: {
@@ -206,7 +206,7 @@ export async function getMessagesByConversationId(
 }
 
 export async function addMessageToConversation(
-  conversationId: number,
+  conversationId: string,
   sender: string,
   message: string, // text was renamed to message in the database schema
 ): Promise<Message> {

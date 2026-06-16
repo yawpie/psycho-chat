@@ -13,7 +13,7 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   username  String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -25,10 +25,9 @@ model User {
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
-  
-  senderId  Int
-  conversationId Int
+  id        String   @id @default(uuid())
+  senderId  String
+  conversationId String
   sender User @relation(fields: [senderId], references: [id])
   conversation Conversation @relation(fields: [conversationId], references: [id])
 
@@ -38,9 +37,9 @@ model Message {
 }
 
 model Conversation {
-  id        Int      @id @default(autoincrement())
-  user1Id   Int
-  user2Id   Int
+  id        String   @id @default(uuid())
+  user1Id   String
+  user2Id   String
   user1     User @relation("User1", fields: [user1Id], references: [id])
   user2     User @relation("User2", fields: [user2Id], references: [id])
   password  String?

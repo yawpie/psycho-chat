@@ -6,7 +6,6 @@ import 'package:psycho_chat/core/notifications/local_notification_service.dart';
 import 'package:psycho_chat/data/datasources/local/app_database.dart';
 import 'package:psycho_chat/data/datasources/local/conversation_datasource.dart';
 import 'package:psycho_chat/data/datasources/local/message_datasource.dart';
-import 'package:psycho_chat/data/datasources/local/user_datasource.dart';
 import 'package:psycho_chat/data/datasources/local/secure_datasource.dart';
 import 'package:psycho_chat/data/datasources/remote/backend_remote_datasource.dart';
 import 'package:psycho_chat/data/datasources/remote/websocket_remote_datasource.dart';
@@ -18,6 +17,7 @@ import 'package:psycho_chat/domain/repositories/chat_repository.dart';
 import 'package:psycho_chat/domain/repositories/convo_repository.dart';
 import 'package:psycho_chat/domain/usecases/login.dart';
 import 'package:psycho_chat/domain/usecases/message.dart';
+import 'package:psycho_chat/domain/usecases/settings.dart';
 
 // ---------------------------------------------------------------------------
 // Datasource providers
@@ -34,7 +34,10 @@ final backendRemoteDatasourceProvider = Provider<BackendRemoteDataSource>(
 /// Local datasource for conversations table.
 final conversationLocalDataSourceProvider =
     Provider<ConversationLocalDataSource>(
-      (ref) => ConversationLocalDataSource(database: ref.watch(appDatabaseProvider), currentUsername: ref.watch(usernameProvider)),
+      (ref) => ConversationLocalDataSource(
+        database: ref.watch(appDatabaseProvider),
+        currentUsername: ref.watch(usernameProvider),
+      ),
     );
 
 /// Local datasource for messages table.
@@ -76,7 +79,9 @@ final convoRepositoryProvider = Provider<ConvoRepository>(
 /// Chat (WebSocket) repository — standalone, no shared dependencies.
 final chatRepositoryProvider = Provider<ChatRepository>(
   (ref) => ChatRepositoryImpl(
-    datasource: ref.watch(websocketRemoteDatasourceProvider),
+    ref.watch(websocketRemoteDatasourceProvider),
+    ref.watch(messageLocalDataSourceProvider),
+    ref.watch(backendRemoteDatasourceProvider),
   ),
 );
 
@@ -86,7 +91,10 @@ final chatRepositoryProvider = Provider<ChatRepository>(
 
 /// Use case for login / register authentication flows.
 final loginUseCaseProvider = Provider<LoginUseCase>(
-  (ref) => LoginUseCase(repository: ref.watch(authRepositoryProvider)),
+  (ref) => LoginUseCase(
+    authRepository: ref.watch(authRepositoryProvider),
+    convoRepository: ref.watch(convoRepositoryProvider),
+  ),
 );
 
 /// Use case for fetching conversations and messages.
@@ -94,6 +102,17 @@ final messageUseCaseProvider = Provider<MessageUseCase>(
   (ref) => MessageUseCase(
     ref.watch(convoRepositoryProvider),
     ref.watch(chatRepositoryProvider),
+  ),
+);
+
+/// Use case for registering a new user.
+final registerUseCaseProvider = Provider<RegisterUseCase>(
+  (ref) => RegisterUseCase(repository: ref.watch(authRepositoryProvider)),
+);
+final settingsUseCaseProvider = Provider<SettingsUseCase>(
+  (ref) => SettingsUseCase(
+    chatRepository: ref.watch(chatRepositoryProvider),
+    convoRepository: ref.watch(convoRepositoryProvider),
   ),
 );
 

@@ -81,7 +81,7 @@ class LocalNotificationService {
     );
 
     await _plugin.show(
-      id: message.id,
+      id: message.id.hashCode,
       title: message.sender,
       body: message.message,
       notificationDetails: details,

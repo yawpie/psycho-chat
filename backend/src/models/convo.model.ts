@@ -1,15 +1,17 @@
 export interface Conversation {
-  id: number;
+  id: string;
   user1: string;
   user2: string;
-  password: string | null;
+  user1DisplayName?: string | null;
+  user2DisplayName?: string | null;
+  password?: string | null;
   createdAt: Date;
 }
 
 export interface Message {
-  id: number;
+  id: string;
   sender: string;
   message: string;
   createdAt: Date;
-  conversationId: number;
+  conversationId: string;
 }

@@ -3,9 +3,8 @@ import cors from "cors";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import apiRouter from "./routes/api";
-import {
-  addMessageToConversation,
-} from "./services/convo.service";
+import { addMessageToConversation } from "./services/convo.service";
+import { Message } from "./models/convo.model";
 
 const PORT = Number.parseInt(process.env.PORT ?? "3000", 10);
 
@@ -60,6 +59,7 @@ interface SendMessagePayload {
   receiver?: unknown;
   text?: unknown;
   conversationId?: unknown;
+  clientMessageId?: unknown;
 }
 
 // online user in memory
@@ -92,33 +92,56 @@ io.on("connection", (socket) => {
       const sender = typeof data.sender === "string" ? data.sender.trim() : "";
       const text = typeof data.text === "string" ? data.text.trim() : "";
       const conversationId =
-        typeof data.conversationId === "number" ? data.conversationId : NaN;
+        typeof data.conversationId === "string" ? data.conversationId : "";
+      const clientMessageId =
+        typeof data.clientMessageId === "string" ? data.clientMessageId : "";
+
+      const receiverUsername =
+        typeof data.receiver === "string" ? data.receiver.trim() : "";
+      const receiverSocketId = onlineUsers.get(receiverUsername);
+      const actualReceiverSocketId =
+        receiverSocketId !== null ? receiverSocketId! : "";
+      const senderSocketId = onlineUsers.get(sender);
+      const actualSenderSocketId =
+        senderSocketId !== null ? senderSocketId! : "";
+
       console.log(`send_message inbound...`);
-      
+
       if (
         !registeredUsername ||
         sender !== registeredUsername ||
         !text ||
-        !Number.isInteger(conversationId)
+        !conversationId
       ) {
         throw new Error("Invalid message payload");
       }
-      
-      console.log(`adding message to db...`);
-      const message = await addMessageToConversation(
-        conversationId,
+
+      // console.log(`adding message to db...`);
+      // const message:Message = await addMessageToConversation(
+      //   conversationId,
+      //   sender,
+      //   text,
+      // );
+      // console.log(`Message added to db: ${message.id}`);
+      const messageWithoutDbId = {
+        // id: "temp-id",
         sender,
-        text,
-      );
-      console.log(`Message added to db: ${message.id}`);
+        message: text,
+        createdAt: new Date(),
+        conversationId,
+        clientMessageId,
+      };
       console.log(`sending message to clients...`);
       const payload = {
-        ...message,
+        ...messageWithoutDbId,
         status: "sent",
       };
 
+      io.to(actualReceiverSocketId).emit("receiver_message", payload);
+      io.to(actualSenderSocketId).emit("receiver_message", payload);
+
       // console.log(`Message from ${sender} to ${receiverUsername}: ${text}`);
-      socket.emit("receiver_message", payload);
+      // socket.emit("receiver_message", payload);
 
       // const receiverSocketId = onlineUsers.get(receiverUsername);
       // if (receiverSocketId && receiverSocketId !== socket.id) {

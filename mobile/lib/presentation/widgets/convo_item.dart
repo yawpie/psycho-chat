@@ -8,10 +8,10 @@ class ConvoItem extends StatelessWidget {
     required this.lastMessagePreview,
     this.onTap,
   });
-  final int convoId;
+  final String convoId;
   final String convoTitle;
   final String lastMessagePreview;
-  final Function(int)? onTap;
+  final Function(String)? onTap;
 
   void handleTap(BuildContext context, String convoTitle) {
     if (onTap != null) {

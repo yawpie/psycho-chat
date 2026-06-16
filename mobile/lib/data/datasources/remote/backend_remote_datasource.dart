@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:psycho_chat/data/datasources/local/app_database.dart';
 import 'package:psycho_chat/data/models/chat_message_model.dart';
 import 'package:psycho_chat/data/models/user_model.dart';
 
@@ -18,15 +17,38 @@ class BackendRemoteDataSource {
     return UserModel.fromJson(data);
   }
 
-  Future<void> register(String username, String password) async {
+  Future<String> register(String username, String password) async {
     final response = await dio.post(
       '/auth/register',
       data: {'username': username, 'password': password},
     );
     print(response.data);
+    return response.data['username'];
   }
 
-  Future<void> createConversation(String user1, String user2) async {
+  Future<void> createNewPasien(
+    String pasienUsername,
+    String createdBy,
+    String password,
+    String fullName,
+  ) async {
+    final response = await dio.post(
+      '/auth/create-new-pasien',
+      data: {
+        'pasienUsername': pasienUsername,
+        'createdBy': createdBy,
+        'password': password,
+        'fullName': fullName,
+      },
+    );
+    print(response.data);
+  }
+
+  Future<void> createConversation(
+    String user1,
+    String user2,
+    String password,
+  ) async {
     // throw UnimplementedError();
     // Simulate a network call to create a conversation between two users
     // await Future.delayed(const Duration(seconds: 1));
@@ -34,7 +56,7 @@ class BackendRemoteDataSource {
     // to create the conversation and return the conversation ID or details.
     final response = await dio.post(
       '/convo/create',
-      data: {'user1': user1, 'user2': user2},
+      data: {'user1': user1, 'user2': user2, 'password': password},
     );
     print(response.data);
   }
@@ -52,8 +74,8 @@ class BackendRemoteDataSource {
         .toList();
   }
 
-  Future<List<MessageModel>> getMessagesForConversation(
-    int conversationId,
+  Future<List<MessageModel>> getMessageForConversationRemote(
+    String conversationId,
   ) async {
     final response = await dio.get('/convo/$conversationId');
     return (response.data as List)
@@ -61,8 +83,17 @@ class BackendRemoteDataSource {
         .toList();
   }
 
-  Future<MessageModel> getLastMessageFromConvo(int conversationId) async {
+  Future<MessageModel> getLastMessageFromConvo(String conversationId) async {
     final response = await dio.get('/convo/$conversationId/last');
     return MessageModel.fromJson(response.data);
+  }
+
+  Future<void> fetchMessages(String conversationId) async {
+    // This method can be used to trigger a fetch of messages for a conversation
+    // and update the local database accordingly.
+    final messages = await getMessageForConversationRemote(conversationId);
+    // Here you would typically write these messages to your local database
+    // using a method from your local data source, e.g.:
+    // await _convoLocalDataSource.writeRemoteMessagesToLocal(messages);
   }
 }

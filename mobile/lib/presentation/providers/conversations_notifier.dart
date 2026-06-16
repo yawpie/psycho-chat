@@ -51,6 +51,7 @@ class ConversationsNotifier extends Notifier<ConversationsState> {
       }
       await ref.read(messageUseCaseProvider).fetchConvosForUser(username);
       print("STEP 3 fetchConvosForUser selesai, data sudah ditulis ke local");
+      print("STEP 3.1: sekarang ambil data convo dari local database...");
       final convos = await ref
           .read(messageUseCaseProvider)
           .getConversationsForUser(username);
@@ -61,6 +62,59 @@ class ConversationsNotifier extends Notifier<ConversationsState> {
       print("STEP 5 state updated");
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+    }
+  }
+
+  Future<void> getLocalConversations() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    final username = ref.read(usernameProvider);
+    try {
+      if (username == null) {
+        state = ConversationsState(
+          errorMessage: 'User not found. Please log in again.',
+          isLoading: false,
+        );
+        return;
+      }
+      final convos = await ref
+          .read(messageUseCaseProvider)
+          .getConversationsForUser(username);
+      state = state.copyWith(conversations: convos, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+    }
+  }
+
+  Future<void> clearConversations() async {
+    try {
+      // await ref.read(chatRepositoryProvider).clearLocalConversations();
+      state = state.copyWith(conversations: []);
+    } catch (e) {
+      print(e);
+      state = state.copyWith(errorMessage: 'Failed to clear conversations: $e');
+    }
+  }
+
+  Future<void> createConversationWithPatient(
+    String patientUsername,
+    String password,
+  ) async {
+    try {
+      final username = ref.read(usernameProvider);
+      if (username == null) {
+        state = state.copyWith(
+          errorMessage: 'User not found. Please log in again.',
+        );
+        return;
+      }
+      await ref
+          .read(messageUseCaseProvider)
+          .createConversation(username, patientUsername, password);
+      // Setelah berhasil membuat convo baru, fetch ulang semua convo untuk update UI.
+      await getLocalConversations();
+    } catch (e) {
+      print(e);
+      state = state.copyWith(errorMessage: 'Failed to create conversation: $e');
     }
   }
 }

@@ -18,6 +18,8 @@ dependencies:
   flutter_riverpod: ^2.6.1
   flutter_local_notifications: ^22.0.0
   connectivity_plus: ^7.1.1
+  uuid: ^4.5.3
+  cryptography: ^2.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -27,3 +29,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/logo.png

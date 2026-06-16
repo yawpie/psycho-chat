@@ -3,201 +3,6 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _usernameMeta = const VerificationMeta(
-    'username',
-  );
-  @override
-  late final GeneratedColumn<String> username = GeneratedColumn<String>(
-    'username',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 50,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, username];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'users';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<User> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('username')) {
-      context.handle(
-        _usernameMeta,
-        username.isAcceptableOrUnknown(data['username']!, _usernameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_usernameMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      username: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}username'],
-      )!,
-    );
-  }
-
-  @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
-  }
-}
-
-class User extends DataClass implements Insertable<User> {
-  final int id;
-  final String username;
-  const User({required this.id, required this.username});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['username'] = Variable<String>(username);
-    return map;
-  }
-
-  UsersCompanion toCompanion(bool nullToAbsent) {
-    return UsersCompanion(id: Value(id), username: Value(username));
-  }
-
-  factory User.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return User(
-      id: serializer.fromJson<int>(json['id']),
-      username: serializer.fromJson<String>(json['username']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'username': serializer.toJson<String>(username),
-    };
-  }
-
-  User copyWith({int? id, String? username}) =>
-      User(id: id ?? this.id, username: username ?? this.username);
-  User copyWithCompanion(UsersCompanion data) {
-    return User(
-      id: data.id.present ? data.id.value : this.id,
-      username: data.username.present ? data.username.value : this.username,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('User(')
-          ..write('id: $id, ')
-          ..write('username: $username')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, username);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is User && other.id == this.id && other.username == this.username);
-}
-
-class UsersCompanion extends UpdateCompanion<User> {
-  final Value<int> id;
-  final Value<String> username;
-  const UsersCompanion({
-    this.id = const Value.absent(),
-    this.username = const Value.absent(),
-  });
-  UsersCompanion.insert({
-    this.id = const Value.absent(),
-    required String username,
-  }) : username = Value(username);
-  static Insertable<User> custom({
-    Expression<int>? id,
-    Expression<String>? username,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (username != null) 'username': username,
-    });
-  }
-
-  UsersCompanion copyWith({Value<int>? id, Value<String>? username}) {
-    return UsersCompanion(
-      id: id ?? this.id,
-      username: username ?? this.username,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (username.present) {
-      map['username'] = Variable<String>(username.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('UsersCompanion(')
-          ..write('id: $id, ')
-          ..write('username: $username')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $ConversationsTable extends Conversations
     with TableInfo<$ConversationsTable, Conversation> {
   @override
@@ -206,16 +11,12 @@ class $ConversationsTable extends Conversations
   $ConversationsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
     aliasedName,
     false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _receiverMeta = const VerificationMeta(
     'receiver',
@@ -231,6 +32,17 @@ class $ConversationsTable extends Conversations
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _passwordMeta = const VerificationMeta(
     'password',
@@ -260,7 +72,13 @@ class $ConversationsTable extends Conversations
     defaultValue: currentDateAndTime,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, receiver, password, createdAt];
+  List<GeneratedColumn> get $columns => [
+    id,
+    receiver,
+    displayName,
+    password,
+    createdAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -275,6 +93,8 @@ class $ConversationsTable extends Conversations
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
     }
     if (data.containsKey('receiver')) {
       context.handle(
@@ -283,6 +103,15 @@ class $ConversationsTable extends Conversations
       );
     } else if (isInserting) {
       context.missing(_receiverMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
     }
     if (data.containsKey('password')) {
       context.handle(
@@ -306,13 +135,17 @@ class $ConversationsTable extends Conversations
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Conversation(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
       receiver: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}receiver'],
       )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      ),
       password: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}password'],
@@ -331,21 +164,26 @@ class $ConversationsTable extends Conversations
 }
 
 class Conversation extends DataClass implements Insertable<Conversation> {
-  final int id;
+  final String id;
   final String receiver;
+  final String? displayName;
   final String? password;
   final DateTime createdAt;
   const Conversation({
     required this.id,
     required this.receiver,
+    this.displayName,
     this.password,
     required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    map['id'] = Variable<String>(id);
     map['receiver'] = Variable<String>(receiver);
+    if (!nullToAbsent || displayName != null) {
+      map['display_name'] = Variable<String>(displayName);
+    }
     if (!nullToAbsent || password != null) {
       map['password'] = Variable<String>(password);
     }
@@ -357,6 +195,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     return ConversationsCompanion(
       id: Value(id),
       receiver: Value(receiver),
+      displayName: displayName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(displayName),
       password: password == null && nullToAbsent
           ? const Value.absent()
           : Value(password),
@@ -370,8 +211,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Conversation(
-      id: serializer.fromJson<int>(json['id']),
+      id: serializer.fromJson<String>(json['id']),
       receiver: serializer.fromJson<String>(json['receiver']),
+      displayName: serializer.fromJson<String?>(json['displayName']),
       password: serializer.fromJson<String?>(json['password']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -380,21 +222,24 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<String>(id),
       'receiver': serializer.toJson<String>(receiver),
+      'displayName': serializer.toJson<String?>(displayName),
       'password': serializer.toJson<String?>(password),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
   Conversation copyWith({
-    int? id,
+    String? id,
     String? receiver,
+    Value<String?> displayName = const Value.absent(),
     Value<String?> password = const Value.absent(),
     DateTime? createdAt,
   }) => Conversation(
     id: id ?? this.id,
     receiver: receiver ?? this.receiver,
+    displayName: displayName.present ? displayName.value : this.displayName,
     password: password.present ? password.value : this.password,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -402,6 +247,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     return Conversation(
       id: data.id.present ? data.id.value : this.id,
       receiver: data.receiver.present ? data.receiver.value : this.receiver,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
       password: data.password.present ? data.password.value : this.password,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
@@ -412,6 +260,7 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     return (StringBuffer('Conversation(')
           ..write('id: $id, ')
           ..write('receiver: $receiver, ')
+          ..write('displayName: $displayName, ')
           ..write('password: $password, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -419,59 +268,76 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   }
 
   @override
-  int get hashCode => Object.hash(id, receiver, password, createdAt);
+  int get hashCode =>
+      Object.hash(id, receiver, displayName, password, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Conversation &&
           other.id == this.id &&
           other.receiver == this.receiver &&
+          other.displayName == this.displayName &&
           other.password == this.password &&
           other.createdAt == this.createdAt);
 }
 
 class ConversationsCompanion extends UpdateCompanion<Conversation> {
-  final Value<int> id;
+  final Value<String> id;
   final Value<String> receiver;
+  final Value<String?> displayName;
   final Value<String?> password;
   final Value<DateTime> createdAt;
+  final Value<int> rowid;
   const ConversationsCompanion({
     this.id = const Value.absent(),
     this.receiver = const Value.absent(),
+    this.displayName = const Value.absent(),
     this.password = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   ConversationsCompanion.insert({
-    this.id = const Value.absent(),
+    required String id,
     required String receiver,
+    this.displayName = const Value.absent(),
     this.password = const Value.absent(),
     this.createdAt = const Value.absent(),
-  }) : receiver = Value(receiver);
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       receiver = Value(receiver);
   static Insertable<Conversation> custom({
-    Expression<int>? id,
+    Expression<String>? id,
     Expression<String>? receiver,
+    Expression<String>? displayName,
     Expression<String>? password,
     Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (receiver != null) 'receiver': receiver,
+      if (displayName != null) 'display_name': displayName,
       if (password != null) 'password': password,
       if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   ConversationsCompanion copyWith({
-    Value<int>? id,
+    Value<String>? id,
     Value<String>? receiver,
+    Value<String?>? displayName,
     Value<String?>? password,
     Value<DateTime>? createdAt,
+    Value<int>? rowid,
   }) {
     return ConversationsCompanion(
       id: id ?? this.id,
       receiver: receiver ?? this.receiver,
+      displayName: displayName ?? this.displayName,
       password: password ?? this.password,
       createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -479,16 +345,22 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<String>(id.value);
     }
     if (receiver.present) {
       map['receiver'] = Variable<String>(receiver.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
     }
     if (password.present) {
       map['password'] = Variable<String>(password.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
     }
     return map;
   }
@@ -498,8 +370,10 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     return (StringBuffer('ConversationsCompanion(')
           ..write('id: $id, ')
           ..write('receiver: $receiver, ')
+          ..write('displayName: $displayName, ')
           ..write('password: $password, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -512,27 +386,34 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   $MessagesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
     aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    true,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+  );
+  static const VerificationMeta _clientMessageIdMeta = const VerificationMeta(
+    'clientMessageId',
+  );
+  @override
+  late final GeneratedColumn<String> clientMessageId = GeneratedColumn<String>(
+    'client_message_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _conversationIdMeta = const VerificationMeta(
     'conversationId',
   );
   @override
-  late final GeneratedColumn<int> conversationId = GeneratedColumn<int>(
+  late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
     'conversation_id',
     aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES conversations (id)',
     ),
@@ -590,6 +471,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    clientMessageId,
     conversationId,
     sender,
     message,
@@ -611,6 +493,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
+    if (data.containsKey('client_message_id')) {
+      context.handle(
+        _clientMessageIdMeta,
+        clientMessageId.isAcceptableOrUnknown(
+          data['client_message_id']!,
+          _clientMessageIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_clientMessageIdMeta);
+    }
     if (data.containsKey('conversation_id')) {
       context.handle(
         _conversationIdMeta,
@@ -619,6 +512,8 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
           _conversationIdMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_conversationIdMeta);
     }
     if (data.containsKey('sender')) {
       context.handle(
@@ -652,19 +547,23 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {clientMessageId};
   @override
   Message map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Message(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}id'],
+      ),
+      clientMessageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_message_id'],
       )!,
       conversationId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}conversation_id'],
-      ),
+      )!,
       sender: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}sender'],
@@ -691,15 +590,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
 }
 
 class Message extends DataClass implements Insertable<Message> {
-  final int id;
-  final int? conversationId;
+  final String? id;
+  final String clientMessageId;
+  final String conversationId;
   final String sender;
   final String message;
   final DateTime createdAt;
   final String status;
   const Message({
-    required this.id,
-    this.conversationId,
+    this.id,
+    required this.clientMessageId,
+    required this.conversationId,
     required this.sender,
     required this.message,
     required this.createdAt,
@@ -708,10 +609,11 @@ class Message extends DataClass implements Insertable<Message> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    if (!nullToAbsent || conversationId != null) {
-      map['conversation_id'] = Variable<int>(conversationId);
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<String>(id);
     }
+    map['client_message_id'] = Variable<String>(clientMessageId);
+    map['conversation_id'] = Variable<String>(conversationId);
     map['sender'] = Variable<String>(sender);
     map['message'] = Variable<String>(message);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -721,10 +623,9 @@ class Message extends DataClass implements Insertable<Message> {
 
   MessagesCompanion toCompanion(bool nullToAbsent) {
     return MessagesCompanion(
-      id: Value(id),
-      conversationId: conversationId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(conversationId),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      clientMessageId: Value(clientMessageId),
+      conversationId: Value(conversationId),
       sender: Value(sender),
       message: Value(message),
       createdAt: Value(createdAt),
@@ -738,8 +639,9 @@ class Message extends DataClass implements Insertable<Message> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Message(
-      id: serializer.fromJson<int>(json['id']),
-      conversationId: serializer.fromJson<int?>(json['conversationId']),
+      id: serializer.fromJson<String?>(json['id']),
+      clientMessageId: serializer.fromJson<String>(json['clientMessageId']),
+      conversationId: serializer.fromJson<String>(json['conversationId']),
       sender: serializer.fromJson<String>(json['sender']),
       message: serializer.fromJson<String>(json['message']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -750,8 +652,9 @@ class Message extends DataClass implements Insertable<Message> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'conversationId': serializer.toJson<int?>(conversationId),
+      'id': serializer.toJson<String?>(id),
+      'clientMessageId': serializer.toJson<String>(clientMessageId),
+      'conversationId': serializer.toJson<String>(conversationId),
       'sender': serializer.toJson<String>(sender),
       'message': serializer.toJson<String>(message),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -760,17 +663,17 @@ class Message extends DataClass implements Insertable<Message> {
   }
 
   Message copyWith({
-    int? id,
-    Value<int?> conversationId = const Value.absent(),
+    Value<String?> id = const Value.absent(),
+    String? clientMessageId,
+    String? conversationId,
     String? sender,
     String? message,
     DateTime? createdAt,
     String? status,
   }) => Message(
-    id: id ?? this.id,
-    conversationId: conversationId.present
-        ? conversationId.value
-        : this.conversationId,
+    id: id.present ? id.value : this.id,
+    clientMessageId: clientMessageId ?? this.clientMessageId,
+    conversationId: conversationId ?? this.conversationId,
     sender: sender ?? this.sender,
     message: message ?? this.message,
     createdAt: createdAt ?? this.createdAt,
@@ -779,6 +682,9 @@ class Message extends DataClass implements Insertable<Message> {
   Message copyWithCompanion(MessagesCompanion data) {
     return Message(
       id: data.id.present ? data.id.value : this.id,
+      clientMessageId: data.clientMessageId.present
+          ? data.clientMessageId.value
+          : this.clientMessageId,
       conversationId: data.conversationId.present
           ? data.conversationId.value
           : this.conversationId,
@@ -793,6 +699,7 @@ class Message extends DataClass implements Insertable<Message> {
   String toString() {
     return (StringBuffer('Message(')
           ..write('id: $id, ')
+          ..write('clientMessageId: $clientMessageId, ')
           ..write('conversationId: $conversationId, ')
           ..write('sender: $sender, ')
           ..write('message: $message, ')
@@ -803,13 +710,21 @@ class Message extends DataClass implements Insertable<Message> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, conversationId, sender, message, createdAt, status);
+  int get hashCode => Object.hash(
+    id,
+    clientMessageId,
+    conversationId,
+    sender,
+    message,
+    createdAt,
+    status,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Message &&
           other.id == this.id &&
+          other.clientMessageId == this.clientMessageId &&
           other.conversationId == this.conversationId &&
           other.sender == this.sender &&
           other.message == this.message &&
@@ -818,62 +733,78 @@ class Message extends DataClass implements Insertable<Message> {
 }
 
 class MessagesCompanion extends UpdateCompanion<Message> {
-  final Value<int> id;
-  final Value<int?> conversationId;
+  final Value<String?> id;
+  final Value<String> clientMessageId;
+  final Value<String> conversationId;
   final Value<String> sender;
   final Value<String> message;
   final Value<DateTime> createdAt;
   final Value<String> status;
+  final Value<int> rowid;
   const MessagesCompanion({
     this.id = const Value.absent(),
+    this.clientMessageId = const Value.absent(),
     this.conversationId = const Value.absent(),
     this.sender = const Value.absent(),
     this.message = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.status = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   MessagesCompanion.insert({
     this.id = const Value.absent(),
-    this.conversationId = const Value.absent(),
+    required String clientMessageId,
+    required String conversationId,
     required String sender,
     required String message,
     this.createdAt = const Value.absent(),
     this.status = const Value.absent(),
-  }) : sender = Value(sender),
+    this.rowid = const Value.absent(),
+  }) : clientMessageId = Value(clientMessageId),
+       conversationId = Value(conversationId),
+       sender = Value(sender),
        message = Value(message);
   static Insertable<Message> custom({
-    Expression<int>? id,
-    Expression<int>? conversationId,
+    Expression<String>? id,
+    Expression<String>? clientMessageId,
+    Expression<String>? conversationId,
     Expression<String>? sender,
     Expression<String>? message,
     Expression<DateTime>? createdAt,
     Expression<String>? status,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (clientMessageId != null) 'client_message_id': clientMessageId,
       if (conversationId != null) 'conversation_id': conversationId,
       if (sender != null) 'sender': sender,
       if (message != null) 'message': message,
       if (createdAt != null) 'created_at': createdAt,
       if (status != null) 'status': status,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   MessagesCompanion copyWith({
-    Value<int>? id,
-    Value<int?>? conversationId,
+    Value<String?>? id,
+    Value<String>? clientMessageId,
+    Value<String>? conversationId,
     Value<String>? sender,
     Value<String>? message,
     Value<DateTime>? createdAt,
     Value<String>? status,
+    Value<int>? rowid,
   }) {
     return MessagesCompanion(
       id: id ?? this.id,
+      clientMessageId: clientMessageId ?? this.clientMessageId,
       conversationId: conversationId ?? this.conversationId,
       sender: sender ?? this.sender,
       message: message ?? this.message,
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -881,10 +812,13 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientMessageId.present) {
+      map['client_message_id'] = Variable<String>(clientMessageId.value);
     }
     if (conversationId.present) {
-      map['conversation_id'] = Variable<int>(conversationId.value);
+      map['conversation_id'] = Variable<String>(conversationId.value);
     }
     if (sender.present) {
       map['sender'] = Variable<String>(sender.value);
@@ -898,6 +832,9 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -905,11 +842,13 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   String toString() {
     return (StringBuffer('MessagesCompanion(')
           ..write('id: $id, ')
+          ..write('clientMessageId: $clientMessageId, ')
           ..write('conversationId: $conversationId, ')
           ..write('sender: $sender, ')
           ..write('message: $message, ')
           ..write('createdAt: $createdAt, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -918,151 +857,32 @@ class MessagesCompanion extends UpdateCompanion<Message> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $UsersTable users = $UsersTable(this);
   late final $ConversationsTable conversations = $ConversationsTable(this);
   late final $MessagesTable messages = $MessagesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    users,
-    conversations,
-    messages,
-  ];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [conversations, messages];
 }
 
-typedef $$UsersTableCreateCompanionBuilder =
-    UsersCompanion Function({Value<int> id, required String username});
-typedef $$UsersTableUpdateCompanionBuilder =
-    UsersCompanion Function({Value<int> id, Value<String> username});
-
-class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
-  $$UsersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get username => $composableBuilder(
-    column: $table.username,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$UsersTableOrderingComposer
-    extends Composer<_$AppDatabase, $UsersTable> {
-  $$UsersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get username => $composableBuilder(
-    column: $table.username,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$UsersTableAnnotationComposer
-    extends Composer<_$AppDatabase, $UsersTable> {
-  $$UsersTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get username =>
-      $composableBuilder(column: $table.username, builder: (column) => column);
-}
-
-class $$UsersTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $UsersTable,
-          User,
-          $$UsersTableFilterComposer,
-          $$UsersTableOrderingComposer,
-          $$UsersTableAnnotationComposer,
-          $$UsersTableCreateCompanionBuilder,
-          $$UsersTableUpdateCompanionBuilder,
-          (User, BaseReferences<_$AppDatabase, $UsersTable, User>),
-          User,
-          PrefetchHooks Function()
-        > {
-  $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$UsersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UsersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$UsersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> username = const Value.absent(),
-              }) => UsersCompanion(id: id, username: username),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String username,
-              }) => UsersCompanion.insert(id: id, username: username),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$UsersTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $UsersTable,
-      User,
-      $$UsersTableFilterComposer,
-      $$UsersTableOrderingComposer,
-      $$UsersTableAnnotationComposer,
-      $$UsersTableCreateCompanionBuilder,
-      $$UsersTableUpdateCompanionBuilder,
-      (User, BaseReferences<_$AppDatabase, $UsersTable, User>),
-      User,
-      PrefetchHooks Function()
-    >;
 typedef $$ConversationsTableCreateCompanionBuilder =
     ConversationsCompanion Function({
-      Value<int> id,
+      required String id,
       required String receiver,
+      Value<String?> displayName,
       Value<String?> password,
       Value<DateTime> createdAt,
+      Value<int> rowid,
     });
 typedef $$ConversationsTableUpdateCompanionBuilder =
     ConversationsCompanion Function({
-      Value<int> id,
+      Value<String> id,
       Value<String> receiver,
+      Value<String?> displayName,
       Value<String?> password,
       Value<DateTime> createdAt,
+      Value<int> rowid,
     });
 
 final class $$ConversationsTableReferences
@@ -1087,7 +907,7 @@ final class $$ConversationsTableReferences
     final manager = $$MessagesTableTableManager(
       $_db,
       $_db.messages,
-    ).filter((f) => f.conversationId.id.sqlEquals($_itemColumn<int>('id')!));
+    ).filter((f) => f.conversationId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_messagesRefsTable($_db));
     return ProcessedTableManager(
@@ -1105,13 +925,18 @@ class $$ConversationsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get receiver => $composableBuilder(
     column: $table.receiver,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1160,13 +985,18 @@ class $$ConversationsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<String> get receiver => $composableBuilder(
     column: $table.receiver,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1190,11 +1020,16 @@ class $$ConversationsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get receiver =>
       $composableBuilder(column: $table.receiver, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get password =>
       $composableBuilder(column: $table.password, builder: (column) => column);
@@ -1256,27 +1091,35 @@ class $$ConversationsTableTableManager
               $$ConversationsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                Value<String> id = const Value.absent(),
                 Value<String> receiver = const Value.absent(),
+                Value<String?> displayName = const Value.absent(),
                 Value<String?> password = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => ConversationsCompanion(
                 id: id,
                 receiver: receiver,
+                displayName: displayName,
                 password: password,
                 createdAt: createdAt,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                required String id,
                 required String receiver,
+                Value<String?> displayName = const Value.absent(),
                 Value<String?> password = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => ConversationsCompanion.insert(
                 id: id,
                 receiver: receiver,
+                displayName: displayName,
                 password: password,
                 createdAt: createdAt,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -1338,21 +1181,25 @@ typedef $$ConversationsTableProcessedTableManager =
     >;
 typedef $$MessagesTableCreateCompanionBuilder =
     MessagesCompanion Function({
-      Value<int> id,
-      Value<int?> conversationId,
+      Value<String?> id,
+      required String clientMessageId,
+      required String conversationId,
       required String sender,
       required String message,
       Value<DateTime> createdAt,
       Value<String> status,
+      Value<int> rowid,
     });
 typedef $$MessagesTableUpdateCompanionBuilder =
     MessagesCompanion Function({
-      Value<int> id,
-      Value<int?> conversationId,
+      Value<String?> id,
+      Value<String> clientMessageId,
+      Value<String> conversationId,
       Value<String> sender,
       Value<String> message,
       Value<DateTime> createdAt,
       Value<String> status,
+      Value<int> rowid,
     });
 
 final class $$MessagesTableReferences
@@ -1364,9 +1211,9 @@ final class $$MessagesTableReferences
         $_aliasNameGenerator(db.messages.conversationId, db.conversations.id),
       );
 
-  $$ConversationsTableProcessedTableManager? get conversationId {
-    final $_column = $_itemColumn<int>('conversation_id');
-    if ($_column == null) return null;
+  $$ConversationsTableProcessedTableManager get conversationId {
+    final $_column = $_itemColumn<String>('conversation_id')!;
+
     final manager = $$ConversationsTableTableManager(
       $_db,
       $_db.conversations,
@@ -1388,8 +1235,13 @@ class $$MessagesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientMessageId => $composableBuilder(
+    column: $table.clientMessageId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1446,8 +1298,13 @@ class $$MessagesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientMessageId => $composableBuilder(
+    column: $table.clientMessageId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1504,8 +1361,13 @@ class $$MessagesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientMessageId => $composableBuilder(
+    column: $table.clientMessageId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get sender =>
       $composableBuilder(column: $table.sender, builder: (column) => column);
@@ -1571,35 +1433,43 @@ class $$MessagesTableTableManager
               $$MessagesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<int?> conversationId = const Value.absent(),
+                Value<String?> id = const Value.absent(),
+                Value<String> clientMessageId = const Value.absent(),
+                Value<String> conversationId = const Value.absent(),
                 Value<String> sender = const Value.absent(),
                 Value<String> message = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => MessagesCompanion(
                 id: id,
+                clientMessageId: clientMessageId,
                 conversationId: conversationId,
                 sender: sender,
                 message: message,
                 createdAt: createdAt,
                 status: status,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<int?> conversationId = const Value.absent(),
+                Value<String?> id = const Value.absent(),
+                required String clientMessageId,
+                required String conversationId,
                 required String sender,
                 required String message,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => MessagesCompanion.insert(
                 id: id,
+                clientMessageId: clientMessageId,
                 conversationId: conversationId,
                 sender: sender,
                 message: message,
                 createdAt: createdAt,
                 status: status,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -1672,8 +1542,6 @@ typedef $$MessagesTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$UsersTableTableManager get users =>
-      $$UsersTableTableManager(_db, _db.users);
   $$ConversationsTableTableManager get conversations =>
       $$ConversationsTableTableManager(_db, _db.conversations);
   $$MessagesTableTableManager get messages =>

@@ -25,20 +25,43 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> register(String username, String password) async {
+  Future<String> register(String username, String password) async {
     try {
-      await backendRemoteDatasource.register(username, password);
+      final response = await backendRemoteDatasource.register(
+        username,
+        password,
+      );
+      return response;
     } catch (e) {
       return Future.error(e);
     }
   }
 
   @override
-  Future<String> getUsername() async {
+  Future<void> createNewPasien(
+    String pasienUsername,
+    String createdBy,
+    String password,
+    String fullName,
+  ) async {
+    try {
+      await backendRemoteDatasource.createNewPasien(
+        pasienUsername,
+        createdBy,
+        password,
+        fullName,
+      );
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  @override
+  Future<String?> getUsername() async {
     try {
       final username = await secureDataSource.read(key: 'username');
       if (username == null) {
-        return Future.error('Username not found');
+        return null;
       }
       return username;
     } catch (e) {

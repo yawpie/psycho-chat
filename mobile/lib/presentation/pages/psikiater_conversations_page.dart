@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:psycho_chat/presentation/pages/chat_page.dart';
 import 'package:psycho_chat/presentation/pages/intro_page.dart';
+import 'package:psycho_chat/presentation/pages/pasien_create_page.dart';
 import 'package:psycho_chat/presentation/pages/settings_page.dart';
 import 'package:psycho_chat/presentation/providers/conversations_notifier.dart';
 import 'package:psycho_chat/presentation/providers/login_notifier.dart';
@@ -62,36 +63,36 @@ class _PsikiaterConversationsPageState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (state.errorMessage != null) {
-      return Scaffold(
-        body: Column(
-          children: [
-            Spacer(),
-            Center(
-              child: Text(
-                'Error: ${state.errorMessage}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
-              ),
-              onPressed: () {
-                ref.read(loginNotifierProvider.notifier).logout();
-              },
-              child: const Text("Logout"),
-            ),
-            Spacer(),
-          ],
-        ),
-      );
-    }
+    // if (state.errorMessage != null) {
+    //   return Scaffold(
+    //     body: Column(
+    //       children: [
+    //         Spacer(),
+    //         Center(
+    //           child: Text(
+    //             'Error: ${state.errorMessage}',
+    //             style: const TextStyle(color: Colors.red),
+    //           ),
+    //         ),
+    //         ElevatedButton(
+    //           style: ElevatedButton.styleFrom(
+    //             foregroundColor: Colors.white,
+    //             backgroundColor: Colors.blue,
+    //           ),
+    //           onPressed: () {
+    //             ref.read(loginNotifierProvider.notifier).logout();
+    //           },
+    //           child: const Text("Logout"),
+    //         ),
+    //         Spacer(),
+    //       ],
+    //     ),
+    //   );
+    // }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Percakapan Psikiater'),
+        title: const Text('PsychoChat - Psikiater'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -101,8 +102,19 @@ class _PsikiaterConversationsPageState
                 MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
             },
-          )
+          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        shape: CircleBorder(), // Membuat tombol lebih besar
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PasienCreatePage()),
+          );
+        },
+        tooltip: 'Tambah Pasien Baru',
+        child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -124,7 +136,10 @@ class _PsikiaterConversationsPageState
                 itemCount: state.conversations.length,
                 itemBuilder: (_, i) => ConvoItem(
                   convoId: state.conversations[i].id,
-                  convoTitle: state.conversations[i].receiver,
+                  convoTitle:
+                      state.conversations[i].displayName?.isNotEmpty == true
+                      ? state.conversations[i].displayName!
+                      : state.conversations[i].receiver,
                   lastMessagePreview: '',
                   onTap: (convoId) {
                     Navigator.push(

@@ -7,7 +7,10 @@
     "dev": "tsx --watch src/server.ts",
     "seed:convos": "tsx src/scripts/convo_seed.ts",
     "seed:users": "tsx src/scripts/user_seed.ts",
-    "seed:messages": "tsx src/scripts/message_seed.ts"
+    "seed:messages": "tsx src/scripts/message_seed.ts",
+    "seed:all": "npm run seed:users && npm run seed:convos && npm run seed:messages",
+    "delete-convos": "tsx src/scripts/delete_convo.ts"
+
   },
   "type": "module",
   "dependencies": {

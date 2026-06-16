@@ -5,6 +5,25 @@ class AppTheme {
 
   static ThemeData get darkTheme {
     return ThemeData(
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Color(0xFF2E073F),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          foregroundColor: Colors.white,
+          backgroundColor: const Color(0xFFAD49E1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+      ),
       brightness: Brightness.dark,
       scaffoldBackgroundColor: const Color(0xFF111111),
       colorScheme: const ColorScheme.dark(
@@ -23,6 +42,25 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     return ThemeData(
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Color(0xFFEBD3F8),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          backgroundColor: const Color(0xFF7A1CAC),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+      ),
       brightness: Brightness.light,
       scaffoldBackgroundColor: const Color(0xFFFFFFFF),
       colorScheme: const ColorScheme.light(

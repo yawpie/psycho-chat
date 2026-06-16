@@ -5,6 +5,7 @@ import 'package:psycho_chat/core/providers.dart';
 
 import 'package:psycho_chat/domain/entities/chat_message.dart';
 import 'package:psycho_chat/domain/repositories/chat_repository.dart';
+import 'package:uuid/uuid.dart';
 
 // ---------------------------------------------------------------------------
 // State
@@ -13,13 +14,12 @@ import 'package:psycho_chat/domain/repositories/chat_repository.dart';
 class ChatState {
   final List<Message> messages;
   final bool isConnected;
-  final int? currentConvoId;
+  final String? currentConvoId;
   final String? receiver;
-  
 
   const ChatState({
     this.messages = const [],
-    this.isConnected = false,
+    this.isConnected = true, // untuk tes fitur offline-first, default true
     this.currentConvoId,
     this.receiver,
   });
@@ -45,14 +45,14 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
 
   /// Inisialisasi: dipanggil dari [ConsumerStatefulWidget.initState] via
   /// `ref.read(chatNotifierProvider.notifier).initialize(repo)`.
-  void initialize(ChatRepository repository, int convoId, String receiver) {
+  void initialize(ChatRepository repository, String convoId, String receiver) {
     _repository = repository;
     // Tunda semua state update ke _connect() agar tidak ada sinkron setState
     // yang memicu rebuild di widget yang belum selesai di-mount.
     _connect(convoId, receiver);
   }
 
-  Future<void> _connect(int convoId, String receiver) async {
+  Future<void> _connect(String convoId, String receiver) async {
     // Batalkan subscription lama agar tidak ada duplikat listener.
     await _subscription?.cancel();
     if (_disposed) return;
@@ -64,28 +64,62 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
       throw Exception("Username is null, cannot connect to server");
     }
 
-    await ref.read(messageUseCaseProvider).fetchMessages(convoId);
-    if (_disposed) return;
-
     final messages = await ref
         .read(messageUseCaseProvider)
-        .getMessagesForConversation(convoId);
-    if (_disposed) return;
+        .getMessagesForConversationFromLocalDb(convoId);
 
+    print("Fetched ${messages.length} messages for convo $convoId");
+    if (_disposed) return;
+    print("Initializing chat state for convo $convoId with receiver $receiver");
     state = ChatState(
       messages: messages,
-      isConnected: false,
+      isConnected: true,
       receiver: receiver,
       currentConvoId: convoId,
     );
+    print("Chat state initialized with ${state.messages.length} messages");
+
+    print("Current messages in state: ${state.messages.length}");
 
     // Dengarkan stream pesan masuk dan tambahkan ke state tanpa menghapus
     // pesan yang sudah ada — memenuhi Kebutuhan 5.3.
     _subscription = _repository!.messageStream.listen((message) {
-      if (_disposed || message.conversationId != state.currentConvoId) return;
+      if (_disposed || message.conversationId != state.currentConvoId) {
+        return;
+      }
+
+      final existingIndex = state.messages.indexWhere(
+        (m) => m.clientMessageId == message.clientMessageId,
+      );
+
+      if (existingIndex != -1) {
+        // update status pesan yang sudah ada
+        final updatedMessages = [...state.messages];
+
+        updatedMessages[existingIndex] = Message(
+          sender: message.sender,
+          message: message.message,
+          status: 'sent',
+          createdAt: message.createdAt,
+          conversationId: message.conversationId,
+          clientMessageId: message.clientMessageId,
+        );
+
+        state = ChatState(
+          messages: updatedMessages,
+          isConnected: state.isConnected,
+          receiver: state.receiver,
+          currentConvoId: state.currentConvoId,
+        );
+        // update status di local db
+        _repository!.updateMessageStatus(message.clientMessageId, "sent");
+        return;
+      }
+
+      // pesan dari user lain
       state = ChatState(
         messages: [...state.messages, message],
-        isConnected: true,
+        isConnected: state.isConnected,
         receiver: state.receiver,
         currentConvoId: state.currentConvoId,
       );
@@ -100,6 +134,20 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
       receiver: state.receiver,
       currentConvoId: state.currentConvoId,
     );
+  }
+
+  Future<void> refreshMessages() async {
+    try {
+      if (state.currentConvoId == null) {
+        throw Exception("Conversation ID is null");
+      }
+      await ref
+          .read(messageUseCaseProvider)
+          .fetchMessages(state.currentConvoId!);
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to refresh messages: $e');
+    }
   }
 
   /// Kirim pesan jika koneksi aktif dan teks tidak kosong.
@@ -122,19 +170,39 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
       if (state.currentConvoId == null) {
         throw Exception("Conversation ID is null");
       }
+
+      final tempMessage = Message(
+        sender: username,
+        message: text,
+        status: 'sending', // Status sementara untuk pesan yang baru dikirim
+        createdAt: DateTime.now(),
+        conversationId: state.currentConvoId!,
+        clientMessageId: Uuid().v4(),
+      );
+
+      // tampilkan langsung di UI
+      state = ChatState(
+        messages: [...state.messages, tempMessage],
+        isConnected: state.isConnected,
+        receiver: state.receiver,
+        currentConvoId: state.currentConvoId,
+      );
       print(
         'Sending message: "$text" from "$username" to "${state.receiver}" in convo ${state.currentConvoId}',
       );
-      // _repository!.sendMessage(
-      //   text,
-      //   username,
-      //   state.receiver!,
-      //   state.currentConvoId!,
-      // );
 
       await ref
           .read(messageUseCaseProvider)
-          .sendMessage(state.currentConvoId!, username, text, state.receiver!);
+          .sendMessage(
+            state.currentConvoId!,
+            username,
+            text,
+            state.receiver!,
+            tempMessage.clientMessageId,
+          );
+      // await ref
+      //     .read(messageUseCaseProvider)
+      //     .fetchMessages(state.currentConvoId!);
     } catch (e) {
       print(e);
       throw Exception(e.toString());

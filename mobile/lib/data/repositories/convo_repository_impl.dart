@@ -8,6 +8,7 @@ import 'package:psycho_chat/data/models/chat_message_model.dart';
 import 'package:psycho_chat/domain/entities/chat_message.dart';
 import 'package:psycho_chat/domain/repositories/convo_repository.dart';
 import 'package:psycho_chat/data/datasources/local/app_database.dart' as DbData;
+import 'package:uuid/uuid.dart';
 
 class ConvoRepositoryImpl implements ConvoRepository {
   final ConversationLocalDataSource _convoLocalDataSource;
@@ -28,11 +29,13 @@ class ConvoRepositoryImpl implements ConvoRepository {
     String sender,
     String receiver,
     String? password,
+    // String conversationId,
   ) async {
     // Implementation for creating a conversation
     try {
-      await _convoLocalDataSource.createConversation(receiver);
-      await _backendRemoteDataSource.createConversation(sender, receiver);
+      String conversationId = Uuid().v4();
+      await _convoLocalDataSource.createConversation(receiver, conversationId);
+      await _backendRemoteDataSource.createConversation(sender, receiver, password ?? '');
     } catch (e) {
       print(e);
       throw Exception('Failed to create conversation: $e');
@@ -60,34 +63,8 @@ class ConvoRepositoryImpl implements ConvoRepository {
     }
   }
 
-  @override
-  Future<List<Message>> getMessagesForConversation(int conversationId) async {
-    // Implementation for fetching messages for a conversation
-    try {
-      List<DbData.Message> getMessagesRes = await _messageLocalDataSource
-          .getMessagesForConversation(conversationId);
-      List<Message> convertedMessages = [];
-      for (var message in getMessagesRes) {
-        convertedMessages.add(MessageModel.fromDrift(message));
-      }
-      return convertedMessages;
-    } catch (e) {
-      print(e);
-      throw Exception('Failed to get messages for conversation: $e');
-    }
-  }
-
-  @override
-  Future<void> fetchMessages(int conversationId) async {
-    try {
-      final messages = await _backendRemoteDataSource
-          .getMessagesForConversation(conversationId);
-      await _convoLocalDataSource.writeRemoteMessagesToLocal(messages);
-    } catch (e) {
-      print(e);
-      throw Exception('Failed to fetch messages: $e');
-    }
-  }
+  /// get messages untuk conversation tertentu dari local database
+ 
 
   @override
   Future<void> fetchConvosForUser(String username) async {
@@ -104,7 +81,10 @@ class ConvoRepositoryImpl implements ConvoRepository {
       }
 
       print("fetching selesai");
+      print("menulis ke local melalui repository...");
       await _convoLocalDataSource.writeRemoteConvoToLocal(convos);
+      print("menulis ke local selesai");
+
     } catch (e) {
       print(e);
       throw Exception('Failed to fetch conversations for user: $e');
@@ -113,33 +93,50 @@ class ConvoRepositoryImpl implements ConvoRepository {
 
   @override
   Future<void> sendMessage(
-    int conversationId,
+    String conversationId,
     String sender,
     String text,
     String receiver,
+    String clientMessageId,
   ) async {
     // Implementation for sending a message
     try {
-      final newMessageId = await _messageLocalDataSource.createMessage(
+      await _messageLocalDataSource.createMessage(
         conversationId,
         sender,
         text,
         DateTime.now(),
         "sending",
+        clientMessageId,
       );
       _webSocketRemoteDatasource.sendMessage(
         text,
         sender,
         receiver,
         conversationId,
+        clientMessageId,
       );
-      await _messageLocalDataSource.updateMessageStatus(newMessageId, "sent");
+      await _messageLocalDataSource.updateMessageStatus(
+        clientMessageId,
+        "sent",
+      );
     } catch (e) {
       print(e);
       throw Exception('Failed to send message: $e');
     }
 
     return;
+  }
+
+  @override
+  Future<void> clearAll() async {
+    try {
+      await _messageLocalDataSource.clearAllMessages();
+      await _convoLocalDataSource.clearAllConvos();
+    } catch (e) {
+      print(e);
+      throw Exception('Failed to clear all conversations and messages: $e');
+    }
   }
 
   // menyesuaikan jika user1 ataupun user2 adalah user yang login, mengubah user2 menjadi user1 jika user2 adalah user yang login, dan sebaliknya. Hal ini untuk memudahkan tampilan di UI agar selalu menampilkan lawan bicara sebagai receiver.

@@ -110,7 +110,8 @@ class WebSocketRemoteDatasource {
     String text,
     String senderUsername,
     String receiver,
-    int conversationId,
+    String conversationId,
+    String clientMessageId,
   ) {
     print('Sending message: $text');
     if (text.isEmpty || _socket == null || !_isConnected) return;
@@ -119,6 +120,7 @@ class WebSocketRemoteDatasource {
       'sender': senderUsername,
       'receiver': receiver,
       'conversationId': conversationId,
+      'clientMessageId': clientMessageId,
     });
   }
 

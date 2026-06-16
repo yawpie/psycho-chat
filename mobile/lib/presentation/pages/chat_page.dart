@@ -7,9 +7,10 @@ import 'package:psycho_chat/presentation/widgets/message_bubble.dart';
 import 'package:psycho_chat/presentation/widgets/message_composer.dart';
 
 class ChatPage extends ConsumerStatefulWidget {
-  const ChatPage({super.key, required this.convoId, required this.receiver});
-  final int convoId;
+  const ChatPage({super.key, required this.convoId, required this.receiver, this.isPsikiater = false});
+  final String convoId;
   final String receiver;
+  final bool isPsikiater;
 
   @override
   ConsumerState<ChatPage> createState() => _ChatPageState();
@@ -17,7 +18,7 @@ class ChatPage extends ConsumerStatefulWidget {
 
 class _ChatPageState extends ConsumerState<ChatPage> {
   final ScrollController _scrollController = ScrollController();
-  late final int _currentConvoId;
+  late final String _currentConvoId;
   late final String username;
   @override
   void initState() {
@@ -39,6 +40,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   void _reconnect() {
+    final repo = ref.read(chatRepositoryProvider);
+    ref
+        .read(chatNotifierProvider.notifier)
+        .initialize(repo, _currentConvoId, widget.receiver);
+  }
+
+  void _refresh() {
     final repo = ref.read(chatRepositoryProvider);
     ref
         .read(chatNotifierProvider.notifier)
@@ -92,8 +100,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
-            onPressed: _reconnect,
-            tooltip: 'Reconnect',
+            onPressed: _refresh,
+            tooltip: 'Refresh',
           ),
         ],
       ),
@@ -118,6 +126,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                       message: messages[i],
                       sender: receiver,
                       loggedUser: username,
+                      status: messages[i].status,
                     ),
                   ),
           ),
