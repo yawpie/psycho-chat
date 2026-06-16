@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:psycho_chat/core/providers.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_conversations_page.dart';
 import 'package:psycho_chat/presentation/providers/login_notifier.dart';
 
@@ -20,13 +21,11 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // memaksa aplikasi untuk menghilangkan data user yang mungkin masih
-      // tersimpan di StateProvider saat logout, agar tidak ada kasus "ghost login"
-      // di mana username masih terbaca di StateProvider padahal sudah logout.
-      // ini temporary solution untuk memastikan state benar-benar bersih ketika
-      // baru login
-      await ref.read(loginNotifierProvider.notifier).logout();
+    // Bersihkan hanya StateProvider in-memory (username, role, convoId)
+    // tanpa memanggil logout() yang akan menulis ke SecureStorage dan
+    // memicu listener di halaman lain.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(usernameProvider.notifier).state = null;
     });
   }
 
@@ -56,9 +55,7 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
     } catch (e) {
       print("Login gagal");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Login gagal. Silakan coba lagi."),
-        ),
+        const SnackBar(content: Text("Login gagal. Silakan coba lagi.")),
       );
     }
   }

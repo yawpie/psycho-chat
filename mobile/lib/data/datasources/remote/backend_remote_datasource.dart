@@ -6,6 +6,14 @@ class BackendRemoteDataSource {
   final Dio dio;
   BackendRemoteDataSource({required this.dio});
 
+  Future<Map<String, dynamic>> pasienLogin(String password) async {
+    final response = await dio.post(
+      '/auth/pasien-login',
+      data: {'password': password},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<UserModel> login(String username, String password) async {
     print("Base URL: ${dio.options.baseUrl}");
     final response = await dio.post(
@@ -88,12 +96,33 @@ class BackendRemoteDataSource {
     return MessageModel.fromJson(response.data);
   }
 
-  Future<void> fetchMessages(String conversationId) async {
-    // This method can be used to trigger a fetch of messages for a conversation
-    // and update the local database accordingly.
-    final messages = await getMessageForConversationRemote(conversationId);
-    // Here you would typically write these messages to your local database
-    // using a method from your local data source, e.g.:
-    // await _convoLocalDataSource.writeRemoteMessagesToLocal(messages);
+  Future<MessageModel> syncMessageToBackend({
+    required String conversationId,
+    required String sender,
+    required String text,
+    required String clientMessageId,
+  }) async {
+    final response = await dio.post(
+      '/messages/sync',
+      data: {
+        'conversationId': conversationId,
+        'sender': sender,
+        'text': text,
+        'clientMessageId': clientMessageId,
+      },
+    );
+
+    return MessageModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<String?> getConversationPassword(String conversationId) async {
+    try {
+      final response = await dio.get('/convo/$conversationId/password');
+      print('Fetched password for conversation $conversationId: ${response.data['password']}');
+      return response.data['password'] as String?;
+    } catch (e) {
+      print('Failed to fetch conversation password for $conversationId: $e');
+      return null;
+    }
   }
 }

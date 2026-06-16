@@ -7,6 +7,13 @@ import {
   _getUserDataByUsername,
 } from "../utils/getUserHelper";
 
+export async function getConversationPassword(conversationId: string): Promise<string | null> {
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+  });
+  return conversation?.password ?? null;
+}
+
 export async function createConversation(
   user1: string,
   user2: string,
@@ -28,7 +35,7 @@ export async function createConversation(
       data: {
         user1Id: user1Id,
         user2Id: user2Id,
-        password: bcrypt.hashSync(password || "password", 10),
+        password: password ?? null,
       },
     });
     const convoWithUsernames: Conversation = {
@@ -199,6 +206,8 @@ export async function getMessagesByConversationId(
         message: msg.message,
         createdAt: msg.createdAt,
         conversationId: msg.conversationId,
+        clientMessageId: msg.clientMessageId,
+        status: "received",
       };
     }),
   );
@@ -209,16 +218,37 @@ export async function addMessageToConversation(
   conversationId: string,
   sender: string,
   message: string, // text was renamed to message in the database schema
+  clientMessageId?: string,
 ): Promise<Message> {
   const senderData = await _getUserDataByUsername(sender);
   if (!senderData) {
     throw new Error(`User not found: ${sender}`);
   }
+
+  if (clientMessageId) {
+    const existingMessage = await prisma.message.findUnique({
+      where: { clientMessageId },
+    });
+
+    if (existingMessage) {
+      return {
+        id: existingMessage.id,
+        sender: senderData.username,
+        message: existingMessage.message,
+        createdAt: existingMessage.createdAt,
+        conversationId: existingMessage.conversationId,
+        clientMessageId: existingMessage.clientMessageId,
+        status: "received",
+      };
+    }
+  }
+
   const newMessage = await prisma.message.create({
     data: {
       senderId: senderData.id,
       message: message,
       conversationId,
+      clientMessageId: clientMessageId ?? null,
     },
   });
 
@@ -228,5 +258,7 @@ export async function addMessageToConversation(
     message: newMessage.message,
     createdAt: newMessage.createdAt,
     conversationId: newMessage.conversationId,
+    clientMessageId: newMessage.clientMessageId,
+    status: "received",
   };
 }

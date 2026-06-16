@@ -90,7 +90,8 @@ io.on("connection", (socket) => {
   socket.on("send_message", async (data: SendMessagePayload) => {
     try {
       const sender = typeof data.sender === "string" ? data.sender.trim() : "";
-      const text = typeof data.text === "string" ? data.text.trim() : "";
+      // Jangan trim text — bisa berisi ciphertext AES-GCM terenkripsi
+      const text = typeof data.text === "string" ? data.text : "";
       const conversationId =
         typeof data.conversationId === "string" ? data.conversationId : "";
       const clientMessageId =
@@ -106,7 +107,8 @@ io.on("connection", (socket) => {
         senderSocketId !== null ? senderSocketId! : "";
 
       console.log(`send_message inbound...`);
-
+      console.log(`message: ${text}`);
+      
       if (
         !registeredUsername ||
         sender !== registeredUsername ||
@@ -156,33 +158,6 @@ io.on("connection", (socket) => {
       });
     }
   });
-  // Listen for incoming messages
-  // socket.on("message", (text: string) => {
-  //   const trimmedText = text?.trim();
-
-  //   if (!trimmedText) {
-  //     socket.emit(
-  //       "message",
-  //       createMessage("system", "Message cannot be empty."),
-  //     );
-  //     return;
-  //   }
-
-  //   // Broadcast message to all connected clients
-  //   const message = createMessage("user", trimmedText);
-  //   io.emit("message", message);
-
-  //   console.log(
-  //     JSON.stringify({
-  //       level: "info",
-  //       message: "Message broadcasted",
-  //       socketId: socket.id,
-  //       text: trimmedText,
-  //       timestamp: new Date().toISOString(),
-  //     }),
-  //   );
-  // });
-
   // Handle disconnection
   socket.on("disconnect", (reason) => {
     if (

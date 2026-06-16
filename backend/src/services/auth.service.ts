@@ -91,6 +91,7 @@ export async function createEncryptedConversation(
           username: pasienUsername,
           password: hashedPassword,
           description: fullName ?? null,
+          role: "PASIEN",
         },
       });
     }
@@ -132,4 +133,56 @@ async function logout(username: string): Promise<void> {
   // For a stateless API, logout can be handled on the client side by simply removing the token or session.
   // If you are using sessions, you would destroy the session here.
   // This function is a placeholder to indicate where logout logic would go if needed.
+}
+
+/**
+ * Login sebagai pasien hanya menggunakan password.
+ *
+ * Cara kerja:
+ * 1. Cari semua conversation yang memiliki password (percakapan pasien-psikiater)
+ * 2. Bandingkan password yang diberikan dengan setiap bcrypt hash
+ * 3. Jika cocok, ambil user pasien dari conversation tersebut (role === "PASIEN")
+ * 4. Return data user pasien + conversationId
+ */
+export async function pasienLogin(
+  password: string,
+): Promise<{ user: User; conversationId: string }> {
+  // Ambil semua conversation yang punya password
+  const conversations = await prisma.conversation.findMany({
+    where: {
+      password: { not: null },
+    },
+    include: {
+      user1: true,
+      user2: true,
+    },
+  });
+
+  for (const convo of conversations) {
+    if (!convo.password) continue;
+
+    const isMatch = await bcrypt.compare(password, convo.password);
+    if (!isMatch) continue;
+
+    // Temukan user yang ber-role PASIEN dalam conversation ini
+    const pasien =
+      convo.user1.role === "PASIEN"
+        ? convo.user1
+        : convo.user2.role === "PASIEN"
+          ? convo.user2
+          : null;
+
+    if (!pasien) continue;
+
+    return {
+      user: {
+        id: pasien.id,
+        username: pasien.username,
+        description: pasien.description ?? null,
+      },
+      conversationId: convo.id,
+    };
+  }
+
+  throw new Error("Password tidak valid atau tidak ditemukan");
 }

@@ -14,10 +14,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> login(String username, String password) async {
     try {
-      await secureDataSource.write(key: "username", value: username);
-      print("username masuk secureDatasource");
+      await secureDataSource.savePsikiaterSession(username: username);
       final user = await backendRemoteDatasource.login(username, password);
-      print("user masuk remoteDatasource");
       return user;
     } catch (e) {
       return Future.error(e);
@@ -73,6 +71,35 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> logout() async {
     try {
       await secureDataSource.delete(key: 'username');
+      await secureDataSource.delete(key: 'user_role');
+      await secureDataSource.delete(key: 'pasien_convo_id');
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  @override
+  Future<String?> getUserRole() async {
+    return await secureDataSource.getUserRole();
+  }
+
+  @override
+  Future<String?> getPasienConvoId() async {
+    return await secureDataSource.getPasienConvoId();
+  }
+
+  @override
+  Future<Map<String, dynamic>> pasienLogin(String password) async {
+    try {
+      final result = await backendRemoteDatasource.pasienLogin(password);
+      final user = result['user'] as Map<String, dynamic>;
+      final conversationId = result['conversationId'] as String;
+      final username = user['username'] as String;
+      await secureDataSource.savePasienSession(
+        username: username,
+        conversationId: conversationId,
+      );
+      return result;
     } catch (e) {
       return Future.error(e);
     }

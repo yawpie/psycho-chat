@@ -14,4 +14,6 @@ export interface Message {
   message: string;
   createdAt: Date;
   conversationId: string;
+  clientMessageId?: string | null;
+  status?: string;
 }

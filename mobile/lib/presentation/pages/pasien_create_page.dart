@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:psycho_chat/core/encryption/aes_gcm_service.dart';
+import 'package:psycho_chat/core/providers.dart';
 import 'package:psycho_chat/presentation/providers/conversations_notifier.dart';
 import 'package:psycho_chat/presentation/providers/login_notifier.dart';
 
@@ -53,10 +54,32 @@ class _PasienCreatePageState extends ConsumerState<PasienCreatePage> {
       }
       if (!mounted) return;
 
+      // Fetch percakapan terbaru untuk mendapatkan conversationId yang baru dibuat
       await ref
           .read(conversationsNotifierProvider.notifier)
           .fetchConversations();
       if (!mounted) return;
+
+      // Derive dan simpan kunci enkripsi untuk percakapan baru ini.
+      // Cari percakapan dengan pasien yang baru dibuat berdasarkan receiver = newPatient.
+      final conversations = ref
+          .read(conversationsNotifierProvider)
+          .conversations;
+      final newConvo = conversations
+          .where((c) => c.receiver == newPatient)
+          .firstOrNull;
+
+      if (newConvo != null) {
+        // Selalu gunakan password plaintext yang diinput psikiater sebagai
+        // material PBKDF2 — jangan gunakan convo.password dari server karena
+        // itu adalah bcrypt hash yang akan menghasilkan kunci berbeda.
+        await ref
+            .read(encryptionUseCaseProvider)
+            .setupEncryptionKeyForConversation(
+              conversationId: newConvo.id,
+              password: password,
+            );
+      }
 
       ScaffoldMessenger.of(
         context,

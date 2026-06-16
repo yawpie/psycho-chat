@@ -15,6 +15,7 @@ import 'package:psycho_chat/data/repositories/convo_repository_impl.dart';
 import 'package:psycho_chat/domain/repositories/auth_repository.dart';
 import 'package:psycho_chat/domain/repositories/chat_repository.dart';
 import 'package:psycho_chat/domain/repositories/convo_repository.dart';
+import 'package:psycho_chat/domain/usecases/encryption.dart';
 import 'package:psycho_chat/domain/usecases/login.dart';
 import 'package:psycho_chat/domain/usecases/message.dart';
 import 'package:psycho_chat/domain/usecases/settings.dart';
@@ -76,12 +77,13 @@ final convoRepositoryProvider = Provider<ConvoRepository>(
   ),
 );
 
-/// Chat (WebSocket) repository — standalone, no shared dependencies.
+/// Chat (WebSocket) repository — enkripsi E2E via AES-GCM.
 final chatRepositoryProvider = Provider<ChatRepository>(
   (ref) => ChatRepositoryImpl(
     ref.watch(websocketRemoteDatasourceProvider),
     ref.watch(messageLocalDataSourceProvider),
     ref.watch(backendRemoteDatasourceProvider),
+    ref.watch(secureDataSourceProvider),
   ),
 );
 
@@ -116,6 +118,14 @@ final settingsUseCaseProvider = Provider<SettingsUseCase>(
   ),
 );
 
+/// Use case untuk manajemen kunci enkripsi end-to-end per percakapan.
+final encryptionUseCaseProvider = Provider<EncryptionUseCase>(
+  (ref) => EncryptionUseCase(
+    secureDataSource: ref.watch(secureDataSourceProvider),
+    convoRepository: ref.watch(convoRepositoryProvider),
+  ),
+);
+
 final secureStorageProvider = Provider((_) => const FlutterSecureStorage());
 
 final secureDataSourceProvider = Provider(
@@ -127,3 +137,9 @@ final secureDataSourceProvider = Provider(
 /// me-re-evaluate provider chain selama perubahan widget tree.
 final usernameProvider = StateProvider<String?>((ref) => null);
 final isDarkModeProvider = StateProvider<bool>((ref) => false);
+
+/// ConversationId pasien yang sedang login — null jika bukan pasien.
+final pasienConvoIdProvider = StateProvider<String?>((ref) => null);
+
+/// Role user yang sedang login: 'PASIEN' atau 'PSIKIATER'. Null jika belum login.
+final userRoleProvider = StateProvider<String?>((ref) => null);

@@ -27,9 +27,16 @@ class LoginUseCase {
     }
   }
 
-  Future<void> pasienLogin(String password) async {
-    // TODO: implement pasien login logic
-    throw UnimplementedError('Pasien login is not implemented yet');
+  /// Login pasien hanya dengan password.
+  /// Return conversationId pasien setelah login berhasil.
+  Future<String> pasienLogin(String password) async {
+    try {
+      final result = await authRepository.pasienLogin(password);
+      final conversationId = result['conversationId'] as String;
+      return conversationId;
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 }
 

@@ -94,7 +94,7 @@ class MessageBubble extends StatelessWidget {
                             ? Icons.access_time
                             : status == 'sent'
                             ? Icons.done
-                            : status == 'read'
+                            : status == 'received'
                             ? Icons.done_all
                             : Icons.access_time,
                         size: 16,

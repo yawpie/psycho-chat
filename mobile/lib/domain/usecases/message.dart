@@ -38,11 +38,24 @@ class MessageUseCase {
     await _chatRepository.fetchMessages(conversationId);
   }
 
+  Future<List<Message>> syncMessagesToBackend(String conversationId) {
+    return _chatRepository.syncConversationMessages(conversationId);
+  }
+
   Future<void> fetchConvosForUser(String username) async {
     await _convoRepository.fetchConvosForUser(username);
   }
 
-  Future<void> createConversation(String sender, String receiver, String password) async {
+  Future<void> createConversation(
+    String sender,
+    String receiver,
+    String password,
+  ) async {
     await _convoRepository.createConversation(sender, receiver, password);
+  }
+
+  /// Fetch password dari remote untuk satu conversation.
+  Future<String?> fetchConversationPassword(String conversationId) async {
+    return _convoRepository.fetchConversationPassword(conversationId);
   }
 }

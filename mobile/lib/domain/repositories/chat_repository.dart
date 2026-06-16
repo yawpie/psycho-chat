@@ -12,6 +12,7 @@ abstract class ChatRepository {
     String conversationId,
     String clientMessageId,
   );
+  Future<List<Message>> syncConversationMessages(String conversationId);
   Future<void> fetchMessages(String conversationId);
   Future<List<Message>> getMessagesForConversation(String conversationId);
 

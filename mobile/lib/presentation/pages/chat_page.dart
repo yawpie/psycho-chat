@@ -7,7 +7,12 @@ import 'package:psycho_chat/presentation/widgets/message_bubble.dart';
 import 'package:psycho_chat/presentation/widgets/message_composer.dart';
 
 class ChatPage extends ConsumerStatefulWidget {
-  const ChatPage({super.key, required this.convoId, required this.receiver, this.isPsikiater = false});
+  const ChatPage({
+    super.key,
+    required this.convoId,
+    required this.receiver,
+    this.isPsikiater = false,
+  });
   final String convoId;
   final String receiver;
   final bool isPsikiater;
@@ -37,6 +42,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   void _sendMessage(String text) {
     ref.read(chatNotifierProvider.notifier).sendMessage(text);
+  }
+
+  void _syncMessages() {
+    ref.read(chatNotifierProvider.notifier).syncMessages();
   }
 
   void _reconnect() {
@@ -73,6 +82,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final chatState = ref.watch(chatNotifierProvider);
     final messages = chatState.messages;
     final isConnected = chatState.isConnected;
+    final isSyncing = chatState.isSyncing;
     final receiver = widget.receiver;
 
     // Auto-scroll ketika ada pesan baru.
@@ -97,6 +107,17 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               size: 10,
               color: isConnected ? Colors.green : Colors.red,
             ),
+          ),
+          IconButton(
+            icon: isSyncing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.sync, size: 20),
+            onPressed: isSyncing ? null : _syncMessages,
+            tooltip: 'Sync ke backend',
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),

@@ -10,4 +10,8 @@ class DioClient {
       headers: {'Content-Type': 'application/json'},
     ),
   );
+
+  static void updateBaseUrl() {
+    dio.options.baseUrl = AppConstants.apiBaseUrl;
+  }
 }

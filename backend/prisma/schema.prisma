@@ -13,40 +13,45 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  description String?
-  messages   Message[]
+  id                   String         @id @default(uuid())
+  username             String         @unique
+  password             String
+  createdAt            DateTime       @default(now())
+  description          String?
+  role                 String         @default("PSIKIATER")
+  messages             Message[]
   conversationsAsUser1 Conversation[] @relation("User1")
   conversationsAsUser2 Conversation[] @relation("User2")
+
   @@map("users")
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  senderId  String
-  conversationId String
-  sender User @relation(fields: [senderId], references: [id])
-  conversation Conversation @relation(fields: [conversationId], references: [id])
+  id              String       @id @default(uuid())
+  senderId        String
+  conversationId  String
+  clientMessageId String?      @unique
+  sender          User         @relation(fields: [senderId], references: [id])
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
 
-  message      String
+  message   String
   createdAt DateTime @default(now())
+
   @@map("messages")
 }
 
 model Conversation {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   user1Id   String
   user2Id   String
-  user1     User @relation("User1", fields: [user1Id], references: [id])
-  user2     User @relation("User2", fields: [user2Id], references: [id])
+  user1     User      @relation("User1", fields: [user1Id], references: [id])
+  user2     User      @relation("User2", fields: [user2Id], references: [id])
   password  String?
-  messages   Message[]
-  createdAt DateTime @default(now())
+  messages  Message[]
+  createdAt DateTime  @default(now())
 
   @@unique([user1Id, user2Id])
   @@map("conversations")
 }
+
 // pengganti Model Message

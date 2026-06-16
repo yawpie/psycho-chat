@@ -51,7 +51,13 @@ class _PsikiaterConversationsPageState
     print("conversations: ${state.conversations.length}");
 
     ref.listen(loginNotifierProvider, (previous, next) {
-      if (next.status == LoginStatus.idle) {
+      final isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? false;
+      final shouldRedirect =
+          previous?.status == LoginStatus.loading &&
+          next.status == LoginStatus.idle &&
+          isCurrentRoute;
+
+      if (shouldRedirect) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const IntroPage()),
@@ -62,33 +68,6 @@ class _PsikiaterConversationsPageState
     if (state.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    // if (state.errorMessage != null) {
-    //   return Scaffold(
-    //     body: Column(
-    //       children: [
-    //         Spacer(),
-    //         Center(
-    //           child: Text(
-    //             'Error: ${state.errorMessage}',
-    //             style: const TextStyle(color: Colors.red),
-    //           ),
-    //         ),
-    //         ElevatedButton(
-    //           style: ElevatedButton.styleFrom(
-    //             foregroundColor: Colors.white,
-    //             backgroundColor: Colors.blue,
-    //           ),
-    //           onPressed: () {
-    //             ref.read(loginNotifierProvider.notifier).logout();
-    //           },
-    //           child: const Text("Logout"),
-    //         ),
-    //         Spacer(),
-    //       ],
-    //     ),
-    //   );
-    // }
 
     return Scaffold(
       appBar: AppBar(
@@ -105,16 +84,50 @@ class _PsikiaterConversationsPageState
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(), // Membuat tombol lebih besar
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PasienCreatePage()),
-          );
-        },
-        tooltip: 'Tambah Pasien Baru',
-        child: const Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            shape: CircleBorder(), // Membuat tombol lebih besar
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PasienCreatePage(),
+                ),
+              );
+            },
+            tooltip: 'Tambah Pasien Baru',
+            child: const Icon(Icons.add),
+          ),
+          SizedBox(width: 16), // Jarak antara tombol
+          FloatingActionButton(
+            shape: CircleBorder(), // Membuat tombol lebih besar
+            onPressed: () async {
+              await ref
+                  .read(conversationsNotifierProvider.notifier)
+                  .fetchAndSetupEncryptionKeys();
+
+              if (!context.mounted) return;
+
+              final error = ref
+                  .read(conversationsNotifierProvider)
+                  .errorMessage;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    error != null
+                        ? 'Gagal fetch keys: $error'
+                        : 'Encryption keys berhasil di-setup untuk semua percakapan',
+                  ),
+                  backgroundColor: error != null ? Colors.red : Colors.green,
+                ),
+              );
+            },
+            tooltip: 'Fetch keys',
+            child: const Icon(Icons.key),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {

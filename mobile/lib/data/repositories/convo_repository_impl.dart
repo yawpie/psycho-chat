@@ -35,7 +35,11 @@ class ConvoRepositoryImpl implements ConvoRepository {
     try {
       String conversationId = Uuid().v4();
       await _convoLocalDataSource.createConversation(receiver, conversationId);
-      await _backendRemoteDataSource.createConversation(sender, receiver, password ?? '');
+      await _backendRemoteDataSource.createConversation(
+        sender,
+        receiver,
+        password ?? '',
+      );
     } catch (e) {
       print(e);
       throw Exception('Failed to create conversation: $e');
@@ -64,7 +68,6 @@ class ConvoRepositoryImpl implements ConvoRepository {
   }
 
   /// get messages untuk conversation tertentu dari local database
- 
 
   @override
   Future<void> fetchConvosForUser(String username) async {
@@ -84,7 +87,6 @@ class ConvoRepositoryImpl implements ConvoRepository {
       print("menulis ke local melalui repository...");
       await _convoLocalDataSource.writeRemoteConvoToLocal(convos);
       print("menulis ke local selesai");
-
     } catch (e) {
       print(e);
       throw Exception('Failed to fetch conversations for user: $e');
@@ -136,6 +138,18 @@ class ConvoRepositoryImpl implements ConvoRepository {
     } catch (e) {
       print(e);
       throw Exception('Failed to clear all conversations and messages: $e');
+    }
+  }
+
+  @override
+  Future<String?> fetchConversationPassword(String conversationId) async {
+    try {
+      return await _backendRemoteDataSource.getConversationPassword(
+        conversationId,
+      );
+    } catch (e) {
+      print('Failed to fetch password for conversation $conversationId: $e');
+      return null;
     }
   }
 

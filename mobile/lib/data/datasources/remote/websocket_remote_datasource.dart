@@ -1,12 +1,13 @@
 import 'dart:async';
 
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter/foundation.dart';
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 
 import 'package:psycho_chat/core/constants/app_constants.dart';
 import 'package:psycho_chat/data/models/chat_message_model.dart';
 
 class WebSocketRemoteDatasource {
-  IO.Socket? _socket;
+  socket_io.Socket? _socket;
   final _messageController = StreamController<MessageModel>.broadcast();
   bool _isConnected = false;
   String? _connectedUsername;
@@ -38,16 +39,14 @@ class WebSocketRemoteDatasource {
     final completer = Completer<void>();
 
     try {
-      // Create socket.io client connection
-      _socket = IO.io(
+      _socket = socket_io.io(
         AppConstants.webSocketUrl,
-        IO.OptionBuilder()
+        socket_io.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
             .build(),
       );
 
-      // Set up event listeners
       _socket!.onConnect((_) {
         _socket!.emit('register', username);
         _isConnected = true;
@@ -74,13 +73,11 @@ class WebSocketRemoteDatasource {
         }
       });
 
-      // Listen for 'message' events from server
       _socket!.on('receiver_message', (data) {
-        print('Received message: $data');
+        debugPrint('Received message: $data');
         _onData(data);
       });
 
-      // Connect to the server
       _socket!.connect();
       await completer.future.timeout(const Duration(seconds: 5));
     } catch (_) {
@@ -113,7 +110,7 @@ class WebSocketRemoteDatasource {
     String conversationId,
     String clientMessageId,
   ) {
-    print('Sending message: $text');
+    debugPrint('Sending message: $text');
     if (text.isEmpty || _socket == null || !_isConnected) return;
     _socket!.emit('send_message', {
       'text': text,

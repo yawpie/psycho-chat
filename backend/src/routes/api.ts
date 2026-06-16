@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createEncryptedConversation,
   login,
+  pasienLogin,
   register,
 } from "../services/auth.service";
 import { validateAuthRequest } from "../middlewares/auth.middleware";
@@ -9,6 +10,7 @@ import {
   addMessageToConversation,
   createConversation,
   getAllConversationsForUsername,
+  getConversationPassword,
   getConversationsWithUsernames,
   getLastMessageByConversationId,
   getMessagesByConversationId,
@@ -84,6 +86,27 @@ router.post("/auth/register", validateAuthRequest, async (req, res) => {
     );
   }
 });
+
+router.post("/auth/pasien-login", async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (typeof password !== "string" || !password.trim()) {
+      return res.status(400).json({ message: "Password harus diisi" });
+    }
+    const result = await pasienLogin(password);
+    res.json(result);
+  } catch (error) {
+    res.status(401).json({ message: "Password tidak valid" });
+    console.error(
+      JSON.stringify({
+        level: "error",
+        message: "Pasien login failed",
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      }),
+    );
+  }
+});
 router.get("/convo", async (req, res) => {
   try {
     const username = req.query.username;
@@ -131,6 +154,19 @@ router.get("/convo/:id/last", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch message" });
   }
 });
+router.get("/convo/:id/password", async (req, res) => {
+  try {
+    const password = await getConversationPassword(req.params.id);
+    if (!password) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
+    console.log(`Fetched password for conversation ${req.params.id}, password: ${password}`);
+    res.json({ password });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch conversation password" });
+  }
+});
+
 router.post("/convo/create", async (req, res) => {
   // Implement conversation creation logic here
 
@@ -168,10 +204,12 @@ router.post("/messages", async (req, res) => {
       if (!conversation) {
         return res.status(404).json({ message: "Conversation not found" });
       }
+      // Jangan trim text — bisa berisi ciphertext terenkripsi
+      const messageText = typeof text === "string" ? text : "";
       const message = await addMessageToConversation(
         conversation.id,
         sender,
-        text.trim(),
+        messageText,
       );
       return res.status(201).json(message);
     }
@@ -186,11 +224,41 @@ router.post("/messages", async (req, res) => {
     const message = await addMessageToConversation(
       conversationId,
       sender,
-      text.trim(),
+      text, // biarkan as-is, mungkin ciphertext
     );
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ message: "Failed to send message" });
+  }
+});
+
+router.post("/messages/sync", async (req, res) => {
+  const { sender, text, conversationId, clientMessageId } = req.body;
+
+  try {
+    if (
+      typeof sender !== "string" ||
+      typeof text !== "string" ||
+      typeof conversationId !== "string" ||
+      !sender.trim() ||
+      !conversationId.trim() ||
+      !text
+    ) {
+      return res.status(400).json({ message: "Invalid message payload" });
+    }
+
+    const message = await addMessageToConversation(
+      conversationId,
+      sender,
+      text,
+      typeof clientMessageId === "string" && clientMessageId.trim()
+        ? clientMessageId
+        : undefined,
+    );
+
+    return res.status(201).json(message);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to sync message" });
   }
 });
 

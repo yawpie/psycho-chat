@@ -117,6 +117,46 @@ class ConversationsNotifier extends Notifier<ConversationsState> {
       state = state.copyWith(errorMessage: 'Failed to create conversation: $e');
     }
   }
+
+  /// Untuk setiap conversation di state, fetch password dari remote dan
+  /// derive/simpan encryption key-nya ke secure storage.
+  ///
+  /// Dipanggil psikiater lewat tombol "Fetch keys" agar kunci enkripsi
+  /// tersedia untuk semua percakapan yang ada.
+  Future<void> fetchAndSetupEncryptionKeys() async {
+    if (state.conversations.isEmpty) return;
+
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final messageUseCase = ref.read(messageUseCaseProvider);
+      final encryptionUseCase = ref.read(encryptionUseCaseProvider);
+
+      await Future.wait(
+        state.conversations.map((convo) async {
+          final password = await messageUseCase.fetchConversationPassword(
+            convo.id,
+          );
+          if (password != null && password.isNotEmpty) {
+            await encryptionUseCase.setupEncryptionKeyForConversation(
+              conversationId: convo.id,
+              password: password,
+            );
+            print('Encryption key setup for convo ${convo.id}');
+          } else {
+            print('No password returned for convo ${convo.id}, skipping.');
+          }
+        }),
+      );
+
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      print('fetchAndSetupEncryptionKeys error: $e');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to fetch encryption keys: $e',
+      );
+    }
+  }
 }
 
 final conversationsNotifierProvider =

@@ -14,12 +14,14 @@ import 'package:uuid/uuid.dart';
 class ChatState {
   final List<Message> messages;
   final bool isConnected;
+  final bool isSyncing;
   final String? currentConvoId;
   final String? receiver;
 
   const ChatState({
     this.messages = const [],
     this.isConnected = true, // untuk tes fitur offline-first, default true
+    this.isSyncing = false,
     this.currentConvoId,
     this.receiver,
   });
@@ -74,6 +76,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
     state = ChatState(
       messages: messages,
       isConnected: true,
+      isSyncing: false,
       receiver: receiver,
       currentConvoId: convoId,
     );
@@ -108,6 +111,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
         state = ChatState(
           messages: updatedMessages,
           isConnected: state.isConnected,
+          isSyncing: state.isSyncing,
           receiver: state.receiver,
           currentConvoId: state.currentConvoId,
         );
@@ -120,6 +124,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
       state = ChatState(
         messages: [...state.messages, message],
         isConnected: state.isConnected,
+        isSyncing: state.isSyncing,
         receiver: state.receiver,
         currentConvoId: state.currentConvoId,
       );
@@ -131,6 +136,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
     state = ChatState(
       messages: state.messages,
       isConnected: _repository!.isConnected,
+      isSyncing: state.isSyncing,
       receiver: state.receiver,
       currentConvoId: state.currentConvoId,
     );
@@ -184,6 +190,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
       state = ChatState(
         messages: [...state.messages, tempMessage],
         isConnected: state.isConnected,
+        isSyncing: state.isSyncing,
         receiver: state.receiver,
         currentConvoId: state.currentConvoId,
       );
@@ -206,6 +213,57 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
     } catch (e) {
       print(e);
       throw Exception(e.toString());
+    }
+  }
+
+  Future<void> syncMessages() async {
+    try {
+      if (state.currentConvoId == null) {
+        throw Exception("Conversation ID is null");
+      }
+      if (state.isSyncing) return;
+
+      state = ChatState(
+        messages: state.messages,
+        isConnected: state.isConnected,
+        isSyncing: true,
+        receiver: state.receiver,
+        currentConvoId: state.currentConvoId,
+      );
+
+      final syncedMessages = await ref
+          .read(messageUseCaseProvider)
+          .syncMessagesToBackend(state.currentConvoId!);
+
+      if (_disposed) return;
+
+      final syncedByClientId = {
+        for (final message in syncedMessages) message.clientMessageId: message,
+      };
+
+      final updatedMessages = state.messages.map((message) {
+        final syncedMessage = syncedByClientId[message.clientMessageId];
+        return syncedMessage ?? message;
+      }).toList();
+
+      state = ChatState(
+        messages: updatedMessages,
+        isConnected: state.isConnected,
+        isSyncing: false,
+        receiver: state.receiver,
+        currentConvoId: state.currentConvoId,
+      );
+    } catch (e) {
+      if (_disposed) return;
+      state = ChatState(
+        messages: state.messages,
+        isConnected: state.isConnected,
+        isSyncing: false,
+        receiver: state.receiver,
+        currentConvoId: state.currentConvoId,
+      );
+      print(e);
+      throw Exception('Failed to sync messages: $e');
     }
   }
 }

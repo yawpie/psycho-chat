@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:psycho_chat/data/datasources/local/app_database.dart';
 import 'package:psycho_chat/data/models/chat_message_model.dart';
-import 'package:psycho_chat/data/models/chat_message_model.dart' as message_model;
+import 'package:psycho_chat/data/models/chat_message_model.dart'
+    as message_model;
 
 class MessageLocalDataSource {
   final AppDatabase database;
@@ -60,6 +61,20 @@ class MessageLocalDataSource {
     await (database.update(database.messages)
           ..where((m) => m.clientMessageId.equals(messageId)))
         .write(MessagesCompanion(status: Value(status)));
+  }
+
+  Future<void> markMessageSynced(
+    String clientMessageId,
+    String backendMessageId,
+  ) async {
+    await (database.update(
+      database.messages,
+    )..where((m) => m.clientMessageId.equals(clientMessageId))).write(
+      MessagesCompanion(
+        id: Value(backendMessageId),
+        status: const Value('synced'),
+      ),
+    );
   }
 
   Future<void> writeRemoteMessagesToLocal(

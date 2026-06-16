@@ -13,11 +13,11 @@ class PsychoChatApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(notificationListenerProvider);
-    ref.watch(isDarkModeProvider);
+    final isDark = ref.watch(isDarkModeProvider);
     return MaterialApp(
       title: AppConstants.appTitle,
       debugShowCheckedModeBanner: false,
-      theme: ref.watch(isDarkModeProvider) ? AppTheme.darkTheme : AppTheme.lightTheme,
+      theme: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
       home: const IntroPage(),
     );
   }

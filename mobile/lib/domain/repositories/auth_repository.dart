@@ -11,4 +11,9 @@ abstract class AuthRepository {
   );
   Future<void> logout();
   Future<String?> getUsername();
+  Future<String?> getUserRole();
+  Future<String?> getPasienConvoId();
+
+  /// Login pasien hanya dengan password. Return {user, conversationId}.
+  Future<Map<String, dynamic>> pasienLogin(String password);
 }
