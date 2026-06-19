@@ -1,7 +1,7 @@
 # Psycho Chat
 
 ## Link Presentasi (Matkul Crypto)
-
+https://youtu.be/svvCfjy6WAw?si=MEa8v2EtFszEB3Gd
 
 ## Ringkasan Struktur Proyek
 
