@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:psycho_chat/data/datasources/local/app_database.dart';
 import 'package:psycho_chat/data/models/chat_message_model.dart';
 import 'package:psycho_chat/data/models/chat_message_model.dart'
@@ -57,9 +58,13 @@ class MessageLocalDataSource {
     )..where((m) => m.id.equals(id))).go();
   }
 
-  Future<void> updateMessageStatus(String messageId, String status) async {
+  Future<void> updateMessageStatus(String clientMessageId, String status) async {
+    if (kDebugMode)
+    {debugPrint(
+      'Updating message status for clientMessageId $clientMessageId to $status',
+    );}
     await (database.update(database.messages)
-          ..where((m) => m.clientMessageId.equals(messageId)))
+          ..where((m) => m.clientMessageId.equals(clientMessageId)))
         .write(MessagesCompanion(status: Value(status)));
   }
 
@@ -72,7 +77,7 @@ class MessageLocalDataSource {
     )..where((m) => m.clientMessageId.equals(clientMessageId))).write(
       MessagesCompanion(
         id: Value(backendMessageId),
-        status: const Value('synced'),
+        status: const Value('received'),
       ),
     );
   }

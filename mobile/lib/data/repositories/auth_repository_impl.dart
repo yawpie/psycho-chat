@@ -14,10 +14,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> login(String username, String password) async {
     try {
-      await secureDataSource.savePsikiaterSession(username: username);
       final user = await backendRemoteDatasource.login(username, password);
+      await secureDataSource.savePsikiaterSession(username: username);
+      print('AuthRepository: Login successful for user: ${user.username}');
       return user;
     } catch (e) {
+      print('AuthRepository: Login error: $e');
       return Future.error(e);
     }
   }
@@ -72,7 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await secureDataSource.delete(key: 'username');
       await secureDataSource.delete(key: 'user_role');
-      await secureDataSource.delete(key: 'pasien_convo_id');
+      await secureDataSource.delete(key: 'backend_ip');
     } catch (e) {
       return Future.error(e);
     }

@@ -681,6 +681,7 @@ export const MessageScalarFieldEnum = {
   senderId: 'senderId',
   conversationId: 'conversationId',
   clientMessageId: 'clientMessageId',
+  status: 'status',
   message: 'message',
   createdAt: 'createdAt'
 } as const
@@ -732,6 +733,13 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'Status'
+ */
+export type EnumStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Status'>
     
 
 

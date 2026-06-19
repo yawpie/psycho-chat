@@ -26,6 +26,12 @@ model User {
   @@map("users")
 }
 
+enum Status {
+  sent
+  received
+  read
+  error
+}
 model Message {
   id              String       @id @default(uuid())
   senderId        String
@@ -33,6 +39,7 @@ model Message {
   clientMessageId String?      @unique
   sender          User         @relation(fields: [senderId], references: [id])
   conversation    Conversation @relation(fields: [conversationId], references: [id])
+  status          Status?       @default(sent)
 
   message   String
   createdAt DateTime @default(now())

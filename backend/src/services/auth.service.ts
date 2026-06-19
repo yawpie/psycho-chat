@@ -44,10 +44,10 @@ export async function login(
     throw new Error("User not found");
   }
   console.log(user);
-
+  
   // Compare the provided password with the hashed password
   const isMatch = await bcrypt.compare(
-    rawPassword || "defaultpassword",
+    rawPassword || "password",
     user.password,
   );
 
@@ -108,7 +108,7 @@ export async function createEncryptedConversation(
       data: {
         user1Id: user1Id,
         user2Id: user2Id,
-        password: hashedPassword,
+        password: password,
       },
     });
     const convoWithUsernames: Conversation = {
@@ -120,6 +120,7 @@ export async function createEncryptedConversation(
       createdAt: conversation.createdAt,
       password: conversation.password,
     };
+    console.log(`Created conversation with ID: ${conversation.id} between ${pasienUsernameData.username} and ${psikiaterData.username}`);
     return convoWithUsernames;
   } catch (error) {
     console.error("Error creating conversation with password:", error);
@@ -161,7 +162,8 @@ export async function pasienLogin(
   for (const convo of conversations) {
     if (!convo.password) continue;
 
-    const isMatch = await bcrypt.compare(password, convo.password);
+    // const isMatch = await bcrypt.compare(password, convo.password);
+    const isMatch = convo.password === password; // Compare plain text for now, replace with bcrypt.compare in production
     if (!isMatch) continue;
 
     // Temukan user yang ber-role PASIEN dalam conversation ini

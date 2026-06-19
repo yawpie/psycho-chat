@@ -2,6 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:psycho_chat/core/configs/app_configs.dart';
+import 'package:psycho_chat/core/constants/app_constants.dart';
+import 'package:psycho_chat/core/network/dio_client.dart';
 import 'package:psycho_chat/core/providers.dart';
 import 'package:psycho_chat/presentation/pages/psikiater_conversations_page.dart';
 import 'package:psycho_chat/presentation/providers/login_notifier.dart';
@@ -24,9 +27,9 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
     // Bersihkan hanya StateProvider in-memory (username, role, convoId)
     // tanpa memanggil logout() yang akan menulis ke SecureStorage dan
     // memicu listener di halaman lain.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(usernameProvider.notifier).state = null;
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   ref.read(usernameProvider.notifier).state = null;
+    // });
   }
 
   @override
@@ -50,13 +53,29 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
       return;
     }
     try {
+      print("AppConfig.backendIp before login: ${AppConfig.backendIp}");
+      print("AppConfig.apiBaseUrl = '${AppConfig.apiBaseUrl}'");
+      print("DioClient.baseUrl = '${DioClient.dio.options.baseUrl}'");
       await ref.read(loginNotifierProvider.notifier).login(username, password);
-      print("Login berhasil");
+      // final loginSuccess = await ref
+      //     .read(loginNotifierProvider.notifier)
+      //     .checkLoginStatus();
+      // if (loginSuccess) {
+      //   print("Login berhasil");
+      // }
     } catch (e) {
-      print("Login gagal");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login gagal. Silakan coba lagi.")),
-      );
+      final String errorMessage;
+      if (e is Exception || e.toString().contains('URL')) {
+        print("Login error: ${e.toString()}");
+        errorMessage =
+            "Gagal terhubung ke server. Pastikan backend sudah berjalan dan IP benar.";
+      } else {
+        errorMessage = "Login gagal. Silakan coba lagi.";
+        print("Login error: $e");
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     }
   }
 
@@ -64,6 +83,7 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loginState = ref.watch(loginNotifierProvider);
+    print("LoginState: ${loginState.status}, username: ${loginState.username}");
     ref.listen<LoginState>(loginNotifierProvider, (previous, next) {
       if (next.status == LoginStatus.success) {
         Navigator.pushAndRemoveUntil(
@@ -75,9 +95,7 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
         );
       }
     });
-
     final isLoading = loginState.status == LoginStatus.loading;
-
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -151,13 +169,6 @@ class _PsikiaterLoginPageState extends ConsumerState<PsikiaterLoginPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  if (loginState.status == LoginStatus.error &&
-                      loginState.errorMessage != null)
-                    Text(
-                      loginState.errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
                   ElevatedButton(
                     onPressed: isLoading ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(

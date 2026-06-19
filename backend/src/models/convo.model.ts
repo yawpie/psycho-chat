@@ -15,5 +15,5 @@ export interface Message {
   createdAt: Date;
   conversationId: string;
   clientMessageId?: string | null;
-  status?: string;
+  status?: string | null;
 }

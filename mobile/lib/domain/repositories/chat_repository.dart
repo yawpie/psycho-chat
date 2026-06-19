@@ -12,6 +12,12 @@ abstract class ChatRepository {
     String conversationId,
     String clientMessageId,
   );
+  Future<Message> submitMessageToBackend({
+    required String conversationId,
+    required String sender,
+    required String text,
+    required String clientMessageId,
+  });
   Future<List<Message>> syncConversationMessages(String conversationId);
   Future<void> fetchMessages(String conversationId);
   Future<List<Message>> getMessagesForConversation(String conversationId);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:psycho_chat/core/configs/app_configs.dart';
 import 'package:psycho_chat/core/constants/app_constants.dart';
 import 'package:psycho_chat/core/providers.dart';
 import 'package:psycho_chat/presentation/helper/confirmation_dialog_helper.dart';
@@ -141,7 +142,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               children: [
                 Expanded(
                   child: Text(
-                    'Saat ini: ${AppConstants.ip}',
+                    'Saat ini: ${AppConfig.backendIp}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),

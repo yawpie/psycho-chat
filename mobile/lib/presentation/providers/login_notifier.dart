@@ -53,6 +53,7 @@ class LoginNotifier extends Notifier<LoginState> {
     state = const LoginState(status: LoginStatus.loading);
     try {
       await ref.read(loginUseCaseProvider).login(username, password);
+      print("LoginNotifier: Login successful for user: $username");
       // Set usernameProvider SEBELUM mengubah login state, agar saat listener
       // loginNotifierProvider memicu navigasi / fetchConversations, username
       // sudah tersedia di StateProvider.
@@ -64,6 +65,7 @@ class LoginNotifier extends Notifier<LoginState> {
 
       state = LoginState(status: LoginStatus.success, username: username);
     } catch (e) {
+      print("LoginNotifier: Login error: ${e.toString()}");
       if (e.toString().contains("bad response")) {
         state = const LoginState(
           status: LoginStatus.error,
@@ -72,6 +74,7 @@ class LoginNotifier extends Notifier<LoginState> {
       } else {
         state = LoginState(status: LoginStatus.error, errorMessage: "Error");
       }
+      rethrow;
     }
   }
 
@@ -88,7 +91,9 @@ class LoginNotifier extends Notifier<LoginState> {
             username: username,
             password: password,
           );
-    } catch (_) {
+    } catch (e) {
+      print("Error setting up encryption keys: $e");
+      rethrow;
       // Kegagalan setup kunci tidak menghentikan sesi
     }
   }

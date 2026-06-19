@@ -19,6 +19,7 @@ class SecureDataSource {
 
   Future<void> writeBackendIp(String backendIp) async {
     await storage.write(key: 'backend_ip', value: backendIp);
+    print("Backend IP saved to secure storage: $backendIp");
   }
 
   Future<void> delete({required String key}) async {

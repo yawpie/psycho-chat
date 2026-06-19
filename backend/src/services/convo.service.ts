@@ -207,7 +207,7 @@ export async function getMessagesByConversationId(
         createdAt: msg.createdAt,
         conversationId: msg.conversationId,
         clientMessageId: msg.clientMessageId,
-        status: "received",
+        status: msg.status,
       };
     }),
   );
@@ -238,7 +238,7 @@ export async function addMessageToConversation(
         createdAt: existingMessage.createdAt,
         conversationId: existingMessage.conversationId,
         clientMessageId: existingMessage.clientMessageId,
-        status: "received",
+        status: existingMessage.status,
       };
     }
   }
@@ -259,6 +259,24 @@ export async function addMessageToConversation(
     createdAt: newMessage.createdAt,
     conversationId: newMessage.conversationId,
     clientMessageId: newMessage.clientMessageId,
-    status: "received",
+    status: newMessage.status,
+  };
+}
+export async function updateMessageStatus(
+  clientMessageId: string,
+  status: "sent" | "received" | "read" | "error",
+): Promise<Message> {
+  const updatedMessage = await prisma.message.update({
+    where: { clientMessageId },
+    data: { status },
+  });
+  return {
+    id: updatedMessage.id,
+    sender: updatedMessage.senderId, // You might want to fetch the actual sender username
+    message: updatedMessage.message,
+    createdAt: updatedMessage.createdAt,
+    conversationId: updatedMessage.conversationId,
+    clientMessageId: updatedMessage.clientMessageId,
+    status: updatedMessage.status,
   };
 }

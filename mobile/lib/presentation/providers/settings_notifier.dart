@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:psycho_chat/core/configs/app_configs.dart';
 import 'package:psycho_chat/core/constants/app_constants.dart';
 import 'package:psycho_chat/core/network/dio_client.dart';
 import 'package:psycho_chat/core/providers.dart';
@@ -21,7 +22,7 @@ class SettingsNotifier extends Notifier<void> {
         .readBackendIp();
     final backendIp = storedBackendIp?.trim();
     if (backendIp == null || backendIp.isEmpty) {
-      return AppConstants.ip;
+      return AppConfig.backendIp ?? '';
     }
     return backendIp;
   }
@@ -35,8 +36,10 @@ class SettingsNotifier extends Notifier<void> {
     await ref
         .read(secureDataSourceProvider)
         .writeBackendIp(normalizedBackendIp);
-    AppConstants.ip = normalizedBackendIp;
+    AppConfig.backendIp = normalizedBackendIp;
+    print("Backend IP updated to: ${AppConfig.backendIp}");
     DioClient.updateBaseUrl();
+    print("Dio base URL updated to: ${DioClient.dio.options.baseUrl}");
     await ref.read(websocketRemoteDatasourceProvider).disconnect();
   }
 }

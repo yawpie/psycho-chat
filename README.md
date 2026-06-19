@@ -1,31 +1,63 @@
 # Psycho Chat
 
+## Link Presentasi (Matkul Crypto)
+
+
 ## Ringkasan Struktur Proyek
 
 Berikut penjelasan singkat fungsi setiap folder dan file penting di proyek ini:
 
-- `backend/` : Berisi layanan backend (Node.js). Termasuk `package.json` dan kode sumber di `src/` — mis. `src/server.js` menjalankan API/server yang melayani klien.
-- `mobile/` : Aplikasi mobile berbasis Flutter. Termasuk `pubspec.yaml`, konfigurasi Android (`android/`), iOS (`ios/`) dan kode aplikasi di `lib/`.
-- `lib/` : Kode sumber utama aplikasi Flutter (mis. `main.dart`). Di sinilah logika UI dan fitur aplikasi mobile berada.
-- `android/`, `ios/`, `macos/`, `linux/`, `windows/` : Direktori native yang dibuat oleh Flutter untuk masing-masing platform (build / konfigurasi native). Jangan mengedit bagian yang dihasilkan kecuali Anda paham konsekuensinya.
-- `build/` : Artefak build dan berkas hasil kompilasi (generated files). Bersifat ter-generate dan biasanya diabaikan dalam kontrol versi.
-- `native_assets/` : Aset native yang disertakan untuk target platform (contoh: file untuk `android/`, `windows/`, dll.).
-- `native_hooks/` : Hook native khusus yang digunakan saat proses build/deploy.
-- `test/` : Tes unit/widget untuk aplikasi Flutter.
-- `web/` : Berkas dan aset untuk target Web (index.html, manifest, icons) ketika aplikasi Flutter dibangun untuk web.
-- `mobile/app/` dan subfolder `build.gradle.kts` dll.: Konfigurasi dan modul Gradle untuk modul Android dari aplikasi mobile.
-- `build/937c3db8349c8c8e17d693c1f7d27f18/` : Direktori internal build cache/metadata (contoh hasil build sebelumnya).
+- `backend/` berisi layanan Node.js. Entry point server ada di `backend/src/server.ts`.
+- `mobile/` berisi aplikasi Flutter. Kode UI utama ada di `mobile/lib/`.
+- `backend/prisma/schema.prisma` berisi skema database Prisma.
+- `build/` dan folder platform native Flutter seperti `android/`, `ios/`, `macos/`, `linux/`, `windows/` adalah hasil generate atau konfigurasi platform.
 
-File dan konfigurasi penting lainnya
+File konfigurasi penting:
 
-- Root `README.md` : Dokumen ini, tempat menjelaskan struktur dan panduan singkat.
-- `backend/package.json` : Definisi dependensi dan script untuk menjalankan backend.
-- `mobile/pubspec.yaml` : Definisi dependensi Flutter, aset, dan konfigurasi package untuk aplikasi mobile.
+- `backend/package.json` berisi script untuk menjalankan backend, build, dan seed data.
+- `backend/.env.example` menyimpan `DATABASE_URL`, dan di repo ini nilainya mengarah ke SQLite lokal.
+- `mobile/pubspec.yaml` berisi dependensi dan konfigurasi aplikasi Flutter.
 
-## Catatan dan rekomendasi
+## Cara Menjalankan Program
 
-- Banyak folder di proyek ini adalah hasil build/generate (mis. `build/`, platform-specific folders). Jangan commit file hasil build ke Git kecuali sengaja diperlukan.
-- Untuk mengembangkan backend: masuk ke `backend/`, jalankan `npm install` lalu `npm run start` (sesuaikan dengan `package.json`).
-- Untuk mengembangkan mobile: buka `mobile/` dengan Android Studio atau VS Code, jalankan `flutter pub get`, lalu gunakan `flutter run` untuk target yang diinginkan.
+### 1. Prasyarat
 
-Butuh penjelasan lebih rinci untuk folder tertentu? Beritahu saya folder mana yang ingin Anda perinci (mis. `backend/src` atau `mobile/lib/widgets`), saya akan tambahkan deskripsi dan contoh perintah develop.
+- Node.js versi 20 atau lebih baru.
+- Flutter SDK yang sudah terpasang.
+- Emulator Android, simulator iOS, atau device fisik untuk menjalankan aplikasi mobile.
+
+### 2. Jalankan backend
+
+1. Buka terminal dan masuk ke folder `backend`.
+2. Jalankan `npm install` untuk memasang dependensi.
+3. Pastikan file `backend/.env` tersedia dan berisi `DATABASE_URL="file:./path/to_db.sqlite"`.
+4. Jalankan backend dengan `npm run dev`.
+5. Backend akan berjalan di `http://localhost:3000` secara default.
+
+Jika ingin menjalankan mode production secara lokal, gunakan `npm run build` lalu `npm start`.
+
+### 3. Jalankan aplikasi mobile
+
+1. Buka terminal baru dan masuk ke folder `mobile`.
+2. Jalankan `flutter pub get` untuk mengambil dependensi Flutter.
+3. Pastikan emulator atau device sudah aktif.
+4. Jalankan `flutter run`.
+5. Jika muncul pilihan device, pilih target yang ingin digunakan.
+
+### 4. Data contoh opsional
+
+Jika ingin mengisi database dengan data contoh, jalankan perintah berikut dari folder `backend`:
+
+- `npm run seed:all` untuk menambahkan data user, conversation, dan message.
+- `npm run delete-convos` jika ingin membersihkan data conversation.
+
+## Urutan yang Disarankan
+
+1. Jalankan backend terlebih dahulu.
+2. Setelah backend aktif, jalankan aplikasi Flutter.
+3. Jika aplikasi mobile tidak bisa terhubung, cek kembali IP backend yang disimpan di pengaturan aplikasi dan pastikan backend masih berjalan.
+
+## Catatan
+
+- Banyak folder di proyek ini adalah hasil build/generate. Jangan commit file hasil build ke Git kecuali memang sengaja diperlukan.
+- Jika Anda ingin, saya bisa lanjut menambahkan bagian troubleshooting, misalnya untuk error koneksi backend, Flutter device tidak terdeteksi, atau database Prisma belum terbentuk.

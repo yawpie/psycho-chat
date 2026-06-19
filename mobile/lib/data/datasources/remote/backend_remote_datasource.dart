@@ -20,6 +20,9 @@ class BackendRemoteDataSource {
       '/auth/login',
       data: {'username': username.trim(), 'password': password},
     );
+    if (response.statusCode != 200) {
+      throw Exception('Login failed with status code: ${response.statusCode}');
+    }
     final Map<String, dynamic> data = response.data;
     print(data);
     return UserModel.fromJson(data);
@@ -51,6 +54,22 @@ class BackendRemoteDataSource {
     );
     print(response.data);
   }
+
+  // deprecated, use syncMessageToBackend instead
+  // Future<void> saveMessageToBackend(MessageModel message) async {
+  //   final response = await dio.post(
+  //     '/messages',
+  //     data: {
+  //       'conversationId': message.conversationId,
+  //       'sender': message.sender,
+  //       'text': message.message,
+  //       'createdAt': message.createdAt.toIso8601String(),
+  //       'status': message.status,
+  //       'clientMessageId': message.clientMessageId,
+  //     },
+  //   );
+  //   print(response.data);
+  // }
 
   Future<void> createConversation(
     String user1,
@@ -90,11 +109,11 @@ class BackendRemoteDataSource {
         .map((json) => MessageModel.fromJson(json))
         .toList();
   }
-
-  Future<MessageModel> getLastMessageFromConvo(String conversationId) async {
-    final response = await dio.get('/convo/$conversationId/last');
-    return MessageModel.fromJson(response.data);
-  }
+  // todo: implement in the future
+  // Future<MessageModel> getLastMessageFromConvo(String conversationId) async {
+  //   final response = await dio.get('/convo/$conversationId/last');
+  //   return MessageModel.fromJson(response.data);
+  // }
 
   Future<MessageModel> syncMessageToBackend({
     required String conversationId,
@@ -118,7 +137,9 @@ class BackendRemoteDataSource {
   Future<String?> getConversationPassword(String conversationId) async {
     try {
       final response = await dio.get('/convo/$conversationId/password');
-      print('Fetched password for conversation $conversationId: ${response.data['password']}');
+      print(
+        'Fetched password for conversation $conversationId: ${response.data['password']}',
+      );
       return response.data['password'] as String?;
     } catch (e) {
       print('Failed to fetch conversation password for $conversationId: $e');

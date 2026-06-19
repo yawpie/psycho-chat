@@ -18,6 +18,22 @@ class ChatState {
   final String? currentConvoId;
   final String? receiver;
 
+  ChatState copyWith({
+    List<Message>? messages,
+    bool? isConnected,
+    bool? isSyncing,
+    String? currentConvoId,
+    String? receiver,
+  }) {
+    return ChatState(
+      messages: messages ?? this.messages,
+      isConnected: isConnected ?? this.isConnected,
+      isSyncing: isSyncing ?? this.isSyncing,
+      currentConvoId: currentConvoId ?? this.currentConvoId,
+      receiver: receiver ?? this.receiver,
+    );
+  }
+
   const ChatState({
     this.messages = const [],
     this.isConnected = true, // untuk tes fitur offline-first, default true
@@ -87,10 +103,10 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
     // Dengarkan stream pesan masuk dan tambahkan ke state tanpa menghapus
     // pesan yang sudah ada — memenuhi Kebutuhan 5.3.
     _subscription = _repository!.messageStream.listen((message) {
+      print("Received message from stream: $message");
       if (_disposed || message.conversationId != state.currentConvoId) {
         return;
       }
-
       final existingIndex = state.messages.indexWhere(
         (m) => m.clientMessageId == message.clientMessageId,
       );
@@ -102,7 +118,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
         updatedMessages[existingIndex] = Message(
           sender: message.sender,
           message: message.message,
-          status: 'sent',
+          status: message.status,
           createdAt: message.createdAt,
           conversationId: message.conversationId,
           clientMessageId: message.clientMessageId,
@@ -115,8 +131,11 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
           receiver: state.receiver,
           currentConvoId: state.currentConvoId,
         );
+        print(
+          'Updated message status for clientMessageId ${message.clientMessageId} to ${message.status}',
+        );
         // update status di local db
-        _repository!.updateMessageStatus(message.clientMessageId, "sent");
+        _repository!.updateMessageStatus(message.clientMessageId, message.status);
         return;
       }
 
@@ -177,7 +196,7 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
         throw Exception("Conversation ID is null");
       }
 
-      final tempMessage = Message(
+      Message tempMessage = Message(
         sender: username,
         message: text,
         status: 'sending', // Status sementara untuk pesan yang baru dikirim
@@ -207,6 +226,31 @@ class ChatNotifier extends AutoDisposeNotifier<ChatState> {
             state.receiver!,
             tempMessage.clientMessageId,
           );
+         tempMessage = tempMessage.copyWith(status: 'sent');
+         state = state.copyWith(
+           messages: state.messages.map((message) {
+             if (message.clientMessageId == tempMessage.clientMessageId) {
+               return tempMessage;
+             }
+             return message;
+           }).toList(),
+         );
+      // final submittedMessage = await ref
+      //     .read(chatRepositoryProvider)
+      //     .submitMessageToBackend(
+      //       conversationId: state.currentConvoId!,
+      //       sender: username,
+      //       text: text,
+      //       clientMessageId: tempMessage.clientMessageId,
+      //     );
+      // state = state.copyWith(
+      //   messages: state.messages.map((message) {
+      //     if (message.clientMessageId == tempMessage.clientMessageId) {
+      //       return submittedMessage;
+      //     }
+      //     return message;
+      //   }).toList(),
+      // );
       // await ref
       //     .read(messageUseCaseProvider)
       //     .fetchMessages(state.currentConvoId!);

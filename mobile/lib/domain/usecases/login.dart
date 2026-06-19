@@ -9,12 +9,7 @@ class LoginUseCase {
   LoginUseCase({required this.authRepository, required this.convoRepository});
 
   Future<User> login(String email, String password) async {
-    try {
-      return await authRepository.login(email, password);
-    } catch (e) {
-      return Future.error(e);
-      // throw Exception('Failed to sign in');
-    }
+    return await authRepository.login(email, password);
   }
 
   Future<void> logout() async {

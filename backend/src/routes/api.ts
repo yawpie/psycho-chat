@@ -48,6 +48,7 @@ router.post("/auth/login", validateAuthRequest, async (req, res) => {
 
 router.post("/auth/create-new-pasien", async (req, res) => {
   try {
+    console.log(`Creating new pasien with username: ${req.body.pasienUsername}, createdBy: ${req.body.createdBy}`);
     const conversation = await createEncryptedConversation(
       req.body.pasienUsername,
       req.body.createdBy,
@@ -194,37 +195,13 @@ router.post("/convo/create", async (req, res) => {
   }
 });
 router.post("/messages", async (req, res) => {
-  const { sender, text, conversationId, receiver } = req.body;
+  const { sender, text, conversationId, clientMessageId } = req.body;
   try {
-    if (receiver && typeof receiver === "string") {
-      const conversation: Conversation = await getConversationsWithUsernames(
-        sender,
-        receiver,
-      );
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-      // Jangan trim text — bisa berisi ciphertext terenkripsi
-      const messageText = typeof text === "string" ? text : "";
-      const message = await addMessageToConversation(
-        conversation.id,
-        sender,
-        messageText,
-      );
-      return res.status(201).json(message);
-    }
-    if (
-      typeof sender !== "string" ||
-      typeof text !== "string" ||
-      !text.trim() ||
-      !Number.isInteger(conversationId)
-    ) {
-      return res.status(400).json({ message: "Invalid message payload" });
-    }
     const message = await addMessageToConversation(
       conversationId,
       sender,
       text, // biarkan as-is, mungkin ciphertext
+      clientMessageId
     );
     res.status(201).json(message);
   } catch (error) {

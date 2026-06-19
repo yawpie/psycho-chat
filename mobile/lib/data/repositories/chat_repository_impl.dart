@@ -99,6 +99,28 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
+  Future<MessageModel> submitMessageToBackend({
+    required String conversationId,
+    required String sender,
+    required String text,
+    required String clientMessageId,
+  }) async {
+    final response = await _backendDatasource.syncMessageToBackend(
+      conversationId: conversationId,
+      sender: sender,
+      text: text,
+      clientMessageId: clientMessageId,
+    );
+    print('Message synced to backend: ${response.id}');
+    // Update local DB dengan ID dari backend dan status 'synced'
+    await _messageLocalDataSource.updateMessageStatus(
+      clientMessageId,
+      'received',
+    );
+    return response;
+  }
+
+  @override
   Future<List<Message>> syncConversationMessages(String conversationId) async {
     final localMessages = await _messageLocalDataSource
         .getMessagesForConversation(conversationId);
@@ -121,9 +143,9 @@ class ChatRepositoryImpl implements ChatRepository {
         clientMessageId: localMessage.clientMessageId,
       );
 
-      await _messageLocalDataSource.markMessageSynced(
+      await _messageLocalDataSource.updateMessageStatus(
         localMessage.clientMessageId,
-        syncedMessage.id!,
+        'received',
       );
 
       syncedMessages.add(syncedMessage);
@@ -145,7 +167,9 @@ class ChatRepositoryImpl implements ChatRepository {
       final base64Key = await _secureDataSource.getEncryptionKey(
         conversationId: message.conversationId,
       );
-      print('STEP 1: Received encrypted message ${message.message}, base64Key: $base64Key');
+      print(
+        'STEP 1: Received encrypted message ${message.message}, base64Key: $base64Key',
+      );
 
       if (base64Key == null) {
         return _withMessage(
@@ -158,7 +182,14 @@ class ChatRepositoryImpl implements ChatRepository {
         encryptedPayload: message.message,
         base64Key: base64Key,
       );
-
+      await _messageLocalDataSource.createMessage(
+        message.conversationId,
+        message.sender,
+        plainText,
+        message.createdAt,
+        message.status,
+        message.clientMessageId,
+      );
       return _withMessage(message, plainText);
     } catch (e) {
       print('Failed to decrypt message ${message.id}: $e');

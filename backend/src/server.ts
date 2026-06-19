@@ -3,7 +3,7 @@ import cors from "cors";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import apiRouter from "./routes/api";
-import { addMessageToConversation } from "./services/convo.service";
+import { addMessageToConversation, updateMessageStatus } from "./services/convo.service";
 import { Message } from "./models/convo.model";
 
 const PORT = Number.parseInt(process.env.PORT ?? "3000", 10);
@@ -87,6 +87,36 @@ io.on("connection", (socket) => {
     );
   });
 
+  socket.on("message_delivered", async (data: { clientMessageId: string, receiver: string }) => {
+    const { clientMessageId, receiver } = data;
+    // Handle message delivered event
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "Message delivered",
+        socketId: socket.id,
+        clientMessageId,
+        timestamp: new Date().toISOString(),
+      }),
+    );
+    try {
+      console.log(`Updating message status to 'received' for clientMessageId: ${clientMessageId}`);
+      const updatedMessage = await updateMessageStatus(clientMessageId, "received");
+      const receiverSocketId = onlineUsers.get(receiver);
+      const payload = {
+        ...updatedMessage,
+        receiver,
+      };
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("message_status_update", payload);
+      } else {
+        console.log(`Receiver ${receiver} is not online`);
+      }
+    } catch (error) {
+      console.error("Error updating message status:", error);
+    }
+  });
+
   socket.on("send_message", async (data: SendMessagePayload) => {
     try {
       const sender = typeof data.sender === "string" ? data.sender.trim() : "";
@@ -118,25 +148,18 @@ io.on("connection", (socket) => {
         throw new Error("Invalid message payload");
       }
 
-      // console.log(`adding message to db...`);
-      // const message:Message = await addMessageToConversation(
-      //   conversationId,
-      //   sender,
-      //   text,
-      // );
-      // console.log(`Message added to db: ${message.id}`);
-      const messageWithoutDbId = {
-        // id: "temp-id",
-        sender,
-        message: text,
-        createdAt: new Date(),
+      console.log(`adding message to db...`);
+      const message:Message = await addMessageToConversation(
         conversationId,
+        sender,
+        text,
         clientMessageId,
-      };
+      );
+      console.log(`Message added to db: ${message.id}`);
       console.log(`sending message to clients...`);
       const payload = {
-        ...messageWithoutDbId,
-        status: "sent",
+        ...message,
+        receiver: receiverUsername,
       };
 
       io.to(actualReceiverSocketId).emit("receiver_message", payload);

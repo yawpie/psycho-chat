@@ -9,6 +9,26 @@ class Message {
     required this.clientMessageId,
   });
 
+  Message copyWith({
+    String? id,
+    String? sender,
+    String? message,
+    DateTime? createdAt,
+    String? status,
+    String? conversationId,
+    String? clientMessageId,
+  }) {
+    return Message(
+      id: id ?? this.id,
+      sender: sender ?? this.sender,
+      message: message ?? this.message,
+      createdAt: createdAt ?? this.createdAt,
+      status: status ?? this.status,
+      conversationId: conversationId ?? this.conversationId,
+      clientMessageId: clientMessageId ?? this.clientMessageId,
+    );
+  }
+
   final String? id;
   final String clientMessageId;
   final String sender;
